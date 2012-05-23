@@ -25,6 +25,8 @@ cdef inline bint errcheck(clAmdFftStatus result) except True:
         raise GpyFFT_Error(result)
     return is_error
 
+#main class
+#TODO: need to initialize (and destroy) at module level
 class GpyFFT(object):
     def __cinit__(self):
         cdef clAmdFftSetupData setup_data
@@ -54,14 +56,13 @@ cdef class Plan(object):
     def __cinit__(self):
         self.plan = 0
 
-    def __init__(self, context, array):
+    def __init__(self, context, shape):
         cdef cl_context _context = <cl_context>context.obj_ptr
         cdef size_t lengths[3]
 
-        ndim = array.ndim
+        #TODO: errcheck shape
+        ndim = len(shape)
         _ndim = {1: CLFFT_1D, 2: CLFFT_2D, 3: CLFFT_3D}[ndim] #TODO: errcheck
-        shape = array.shape
-
         for i in range(ndim):
             lengths[i] = shape[i]
 
@@ -70,9 +71,26 @@ cdef class Plan(object):
                                            _ndim,
                                            lengths, 
                                             ))
+        #TODO: set precision
+        #TODO: set strides
 
+    def bake(self):
+        errcheck(clAmdFftBakePlan(self.plan,
+                                  0, NULL,
+                                  NULL, NULL))
 
+    def execute(self, 
+                queues, 
+                in_buffer, 
+                out_buffer = None,
+                forward = True, 
+                wait_for_events = None, 
+                temp_buffer = None,
+                ):
+        pass
+                
 
+gpyfft = GpyFFT()
 
 
 #cdef Plan PlanFactory():
