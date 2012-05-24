@@ -29,7 +29,7 @@ cdef inline bint errcheck(clAmdFftStatus result) except True:
 
 #main class
 #TODO: need to initialize (and destroy) at module level
-class GpyFFT(object):
+cdef class GpyFFT(object):
     def __cinit__(self):
         print "init clAmdFft"
         cdef clAmdFftSetupData setup_data
@@ -45,8 +45,9 @@ class GpyFFT(object):
         errcheck(clAmdFftGetVersion(&major, &minor, &patch))
         return (major, minor, patch)
     
-    def create_plan(self, context, array):
-        return Plan(context, array)
+    def create_plan(self, context, tuple shape):
+        assert isinstance(context, cl.Context)
+        return Plan(context.obj_ptr, shape)
      
         
 cdef class Plan(object):
@@ -54,16 +55,16 @@ cdef class Plan(object):
     cdef clAmdFftPlanHandle plan
 
     def __dealloc__(self):
-        #if self.plan:
-        #    errcheck(clAmdFftDestroyPlan(&self.plan))
+        if self.plan:
+            print "destroy plan", hex(self.plan)
+            errcheck(clAmdFftDestroyPlan(&self.plan))
         pass
     
     def __cinit__(self):
         self.plan = 0
 
-    def __init__(self, context, tuple shape):
-        assert isinstance(context, cl.Context)
-        cdef cl_context _context = <cl_context>context.obj_ptr
+    def __init__(self, context_handle, tuple shape):
+        cdef cl_context _context = <cl_context><long int>context_handle
         cdef size_t lengths[3]
 
         #TODO: errcheck shape
@@ -75,17 +76,32 @@ cdef class Plan(object):
         for i in range(_ndim):
             print lengths[i]
 
-        errcheck(clAmdFftCreateDefaultPlan(&self.plan,
-                                           _context,
-                                           _ndim,
-                                           &lengths[0], 
-                                            ))
+        print "context:", hex(<long>_context)
+            
+        cdef clAmdFftPlanHandle plan
+
+        clAmdFftCreateDefaultPlan(
+            &self.plan,
+             _context,
+             _ndim,
+             &lengths[0], 
+                                            )
+        print "plan:", hex(self.plan)
         #TODO: set precision
         #TODO: set strides
 
-    def bake(self):
+    def get_precision(self):
+        cdef clAmdFftPrecision precision
+        errcheck(clAmdFftGetPlanPrecision(self.plan, &precision))
+        return precision
+
+    def bake(self, long int queue_handle):
+        
+        cdef cl_command_queue queue = <cl_command_queue>queue_handle
+        print hex(queue_handle), hex(<long>queue)
+                                              
         errcheck(clAmdFftBakePlan(self.plan,
-                                  0, NULL,
+                                  1, &queue,
                                   NULL, NULL))
 
     def execute(self, 
@@ -99,11 +115,11 @@ cdef class Plan(object):
         pass
                 
 
-gpyfft = GpyFFT()
+#gpyfft = GpyFFT()
 
 
 #cdef Plan PlanFactory():
     #cdef Plan instance = Plan.__new__(Ref)
-    #instance plan = None
+    #instance.plan = None
     #return instance
 #    pass
