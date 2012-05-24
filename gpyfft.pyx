@@ -1,5 +1,7 @@
 # -*- coding: latin-1 -*-
 
+import pyopencl as cl
+
 error_dict = {
     CLFFT_SUCCESS: 'no error',
     CLFFT_BUGCHECK: 'Bugcheck',
@@ -29,11 +31,13 @@ cdef inline bint errcheck(clAmdFftStatus result) except True:
 #TODO: need to initialize (and destroy) at module level
 class GpyFFT(object):
     def __cinit__(self):
+        print "init clAmdFft"
         cdef clAmdFftSetupData setup_data
         errcheck(clAmdFftInitSetupData(&setup_data))
         errcheck(clAmdFftSetup(&setup_data))
 
     def __dealloc__(self):
+        print "closing clAmdFft"
         errcheck(clAmdFftTeardown())
 
     def get_version(self):
@@ -50,13 +54,15 @@ cdef class Plan(object):
     cdef clAmdFftPlanHandle plan
 
     def __dealloc__(self):
-        if self.plan:
-            errcheck(clAmdFftDestroyPlan(&self.plan))
-
+        #if self.plan:
+        #    errcheck(clAmdFftDestroyPlan(&self.plan))
+        pass
+    
     def __cinit__(self):
         self.plan = 0
 
-    def __init__(self, context, shape):
+    def __init__(self, context, tuple shape):
+        assert isinstance(context, cl.Context)
         cdef cl_context _context = <cl_context>context.obj_ptr
         cdef size_t lengths[3]
 
@@ -65,11 +71,14 @@ cdef class Plan(object):
         _ndim = {1: CLFFT_1D, 2: CLFFT_2D, 3: CLFFT_3D}[ndim] #TODO: errcheck
         for i in range(ndim):
             lengths[i] = shape[i]
+        
+        for i in range(_ndim):
+            print lengths[i]
 
         errcheck(clAmdFftCreateDefaultPlan(&self.plan,
                                            _context,
                                            _ndim,
-                                           lengths, 
+                                           &lengths[0], 
                                             ))
         #TODO: set precision
         #TODO: set strides

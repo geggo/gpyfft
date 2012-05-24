@@ -5,7 +5,8 @@ import numpy as np
 
 import os.path
 
-#LIBRAW = 'LibRaw-0.14.0-Alpha3'
+AMDFFT = r'C:\Program Files (x86)\AMD\clAmdFft'
+AMDAPP = r'C:\Program Files (x86)\AMD APP'
 
 setup(
     name = 'Gpyfft',
@@ -13,15 +14,17 @@ setup(
     description = '',
     cmdclass = {'build_ext': build_ext},
     #packages = [''],
-    ext_modules = [Extension("_gpyfft",
+    ext_modules = [Extension("gpyfft",
                              ["gpyfft.pyx"],
-                             #include_dirs = [".",
-                             #                os.path.join(LIBRAW,'libraw'),
-                             #                np.get_include()],
+                             include_dirs = [".",
+                                             os.path.join(AMDFFT,'include'),
+                                             os.path.join(AMDAPP,'include'),
+                             #                np.get_include()
+                                             ],
                              extra_compile_args = [],
                              extra_link_args = [],
-                             #libraries = ['raw_r', 'stdc++'],
-                             #library_dirs = [os.path.join(LIBRAW, 'lib')]
+                             libraries = ['clAmdFft.Runtime'],
+                             library_dirs = [os.path.join(AMDFFT, 'lib64/import')]
                              )
                    ],
     )

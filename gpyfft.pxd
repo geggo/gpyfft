@@ -1,4 +1,4 @@
-cdef extern from "cl.h":
+cdef extern from "clAmdFft.h":
     ctypedef int cl_int
     ctypedef unsigned int cl_uint
     ctypedef unsigned long int cl_ulong
@@ -8,8 +8,6 @@ cdef extern from "cl.h":
     ctypedef void* cl_event
     ctypedef void* cl_mem
 
-
-cdef extern from "clAmdFft.h":
 
     ctypedef enum clAmdFftStatus:
         CLFFT_INVALID_GLOBAL_WORK_SIZE
