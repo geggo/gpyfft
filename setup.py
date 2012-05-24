@@ -1,7 +1,6 @@
 from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
-import numpy as np
 
 import os.path
 
@@ -19,7 +18,6 @@ setup(
                              include_dirs = [".",
                                              os.path.join(AMDFFT,'include'),
                                              os.path.join(AMDAPP,'include'),
-                             #                np.get_include()
                                              ],
                              extra_compile_args = [],
                              extra_link_args = [],
@@ -29,4 +27,3 @@ setup(
                    ],
     )
 
-#see setup.py for EOS
