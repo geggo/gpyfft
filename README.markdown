@@ -7,7 +7,7 @@ Introduction
 AMD has created a nice FFT library for use with their OpenCL implementation
 called:
 
-AMD Accelerated Parallel Processing Math Libraries
+AMD Accelerated Parallel Processing Math Libraries<br/>
 http://developer.amd.com/libraries/appmathlibs/Pages/default.aspx
 
 But it doesn't generate a set of kernels and hand them back to the user to queue
@@ -31,16 +31,17 @@ Requirements
 Installation
 ------------
 
-* install clAmdFft, add clAmdFft/binXX to PATH (or copy
-  clAmdFft.Runtime.dll to package directory), edit setup.py to point
-  to clAmdFft and AMD APP directories.
+1)  Install the AMD library:
 
-  And either:
+    * install clAmdFft
+    * add clAmdFft/binXX to PATH, or copy clAmdFft.Runtime.dll to package directory
+    * edit setup.py to point to clAmdFft and AMD APP directories
+
+  Then, either:
   
-* python setup.py install
-
-  Or:
-* inplace build:
+2a) python setup.py install
+  <p/>Or:<p/>
+2b) inplace build:
   python setup.py build_ext --inplace
 
 License:
