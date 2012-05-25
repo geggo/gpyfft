@@ -45,48 +45,51 @@ Installation
 
 License:
 --------
-
-GPL
+ GPL
+ <br/>
 (does it have to be a GPL?  Can we use one that's better for commercial and non-commercial use?)
 
 Tested Platforms
 ----------------
-================  ============================================================
-Directive Name    Description (Docutils version added to, in [brackets])
-================  ============================================================
-attention         Specific admonition; also "caution", "danger",
-                  "error", "hint", "important", "note", "tip", "warning"
-admonition        Generic titled admonition: ``.. admonition:: By The Way``
-image             ``.. image:: picture.png``; many options possible
-figure            Like "image", but with optional caption and legend
-topic             ``.. topic:: Title``; like a mini section
-sidebar           ``.. sidebar:: Title``; like a mini parallel document
-parsed-literal    A literal block with parsed inline markup
-rubric            ``.. rubric:: Informal Heading``
-epigraph          Block quote with class="epigraph"
-highlights        Block quote with class="highlights"
-pull-quote        Block quote with class="pull-quote"
-compound          Compound paragraphs [0.3.6]
-container         Generic block-level container element [0.3.10]
-table             Create a titled table [0.3.1]
-list-table        Create a table from a uniform two-level bullet list [0.3.8]
-csv-table         Create a table from CSV data (requires Python 2.3+) [0.3.4]
-contents          Generate a table of contents
-sectnum           Automatically number sections, subsections, etc.
-header, footer    Create document decorations [0.3.8]
-target-notes      Create an explicit footnote for each external target
-math              Mathematical notation (input in LaTeX format)
-meta              HTML-specific metadata
-include           Read an external reST file as if it were inline
-raw               Non-reST data passed untouched to the Writer
-replace           Replacement text for substitution definitions
-unicode           Unicode character code conversion for substitution defs
-date              Generates today's date; for substitution defs
-class             Set a "class" attribute on the next element
-role              Create a custom interpreted text role [0.3.2]
-default-role      Set the default interpreted text role [0.3.10]
-title             Set the metadata document title [0.3.10]
-================  ============================================================
+<table width="100%">
+  <tr>
+    <th>OS</th><th>Python</th><th>AMD APP</th><th>OpenCL</th><th>Device</th><th>Status</th>
+  </tr>
+  <tr>
+    <td>Win7 (64 bit)</td>
+    <td>2.7 (64bit)</td>
+    <td>2.7</td>
+    <td>?<p/></td>
+    <td>AMD 6850</td>
+    <td>works!</td>
+  </tr>
+  
+  <tr>
+    <td>Win7 (64 bit)</td>
+    <td>2.7 (32bit)</td>
+    <td>2.7</td>
+    <td>OpenCL 1.1<br/>AMD-APP-SDK-v2.4<br/>(595.10)<p/></td>
+    <td>Intel i7</td>
+    <td>works!</td>    
+  </tr>
+  
+  <tr>
+    <td>Win7 (64 bit)</td>
+    <td>2.7 (32bit)</td>
+    <td>2.7</td>
+    <td>OpenCL 1.1<br/>(Intel)<p/></td>
+    <td>Intel i7</td>
+    <td>works!</td>    
+  </tr>
 
+  <tr>
+    <td>Win7 (64 bit)</td>
+    <td>2.7 (32bit)</td>
+    <td>2.7</td>
+    <td>OpenCL 1.0<br/>CUDA 4.0.1<br/>(NVIDIA)<p/></td>
+    <td>Quadro 2000M</td>
+    <td>Fails</td>    
+  </tr>
+</table>
 
 (C) Gregor Thalhammer 2012
