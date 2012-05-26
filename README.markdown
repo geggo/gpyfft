@@ -7,7 +7,7 @@ Introduction
 AMD has created a nice FFT library for use with their OpenCL implementation
 called:
 
-AMD Accelerated Parallel Processing Math Libraries
+AMD Accelerated Parallel Processing Math Libraries<br/>
 http://developer.amd.com/libraries/appmathlibs/Pages/default.aspx
 
 But it doesn't generate a set of kernels and hand them back to the user to queue
