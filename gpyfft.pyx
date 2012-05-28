@@ -83,6 +83,7 @@ cdef class Plan(object):
             raise ValueError('expected shape to be tuple of length 1,2 or 3')
 
         cdef size_t lengths[3]
+        cdef int i
         for i in range(ndim):
             lengths[i] = shape[i]
         
@@ -112,6 +113,102 @@ cdef class Plan(object):
         def __set__(self, cl_float value):
             errcheck(clAmdFftSetPlanScale(self.plan, CLFFT_BACKWARD, value))
 
+    property batch_size:
+        def __get__(self):
+            cdef size_t nbatch
+            errcheck(clAmdFftGetPlanBatchSize(self.plan, &nbatch))
+            return nbatch
+        def __set__(self, nbatch):
+            errcheck(clAmdFftSetPlanBatchSize(self.plan, nbatch))
+
+    cdef clAmdFftDim get_dim(self):
+        cdef clAmdFftDim dim
+        cdef cl_uint size
+        errcheck(clAmdFftGetPlanDim(self.plan, &dim, &size))
+        return dim
+            
+    property shape:
+        def __get__(self):
+            cdef clAmdFftDim dim = self.get_dim()
+            cdef size_t sizes[3]
+            errcheck(clAmdFftGetPlanLength(self.plan, dim, &sizes[0]))
+            if dim == 1:
+                return (sizes[0],)
+            elif dim == 2:
+                return (sizes[0], sizes[1])
+            elif dim == 3:
+                return (sizes[0], sizes[1], sizes[2])
+
+        def __set__(self, tuple shape):
+            assert len(shape) <= 3
+            cdef clAmdFftDim dim = <clAmdFftDim>len(shape)
+            #errcheck(clAmdFftSetPlanDim(self.plan, dim))
+            cdef size_t sizes[3]
+            cdef int i
+            for i in range(len(shape)):
+                sizes[i] = shape[i]
+            errcheck(clAmdFftSetPlanLength(self.plan, dim, &sizes[0]))
+
+    property strides_in:
+        def __get__(self):
+            cdef clAmdFftDim dim = self.get_dim()
+            cdef size_t strides[3]
+            errcheck(clAmdFftGetPlanInStride(self.plan, dim, strides))
+            if dim == 1:
+                return (strides[0],)
+            elif dim == 2:
+                return (strides[0], strides[1])
+            elif dim == 3:
+                return (strides[0], strides[1], strides[2])
+
+        def __set__(self, tuple strides):
+            assert len(strides) <= 3
+            cdef clAmdFftDim dim = <clAmdFftDim>len(strides)
+            cdef size_t c_strides[3]
+            cdef int i
+            for i in range(dim):
+                c_strides[i] = strides[i]
+            errcheck(clAmdFftSetPlanInStride(self.plan, dim, &c_strides[0]))
+
+    property strides_out:
+        def __get__(self):
+            cdef clAmdFftDim dim = self.get_dim()
+            cdef size_t strides[3]
+            errcheck(clAmdFftGetPlanOutStride(self.plan, dim, strides))
+            if dim == 1:
+                return (strides[0],)
+            elif dim == 2:
+                return (strides[0], strides[1])
+            elif dim == 3:
+                return (strides[0], strides[1], strides[2])
+
+        def __set__(self, tuple strides):
+            assert len(strides) <= 3
+            cdef clAmdFftDim dim = <clAmdFftDim>len(strides)
+            cdef size_t c_strides[3]
+            cdef int i
+            for i in range(dim):
+                c_strides[i] = strides[i]
+            errcheck(clAmdFftSetPlanOutStride(self.plan, dim, &c_strides[0]))
+            
+    property distances:
+        def __get__(self):
+            cdef size_t dist_in, dist_out
+            errcheck(clAmdFftGetPlanDistance(self.plan, &dist_in, &dist_out))
+            return (dist_in, dist_out)
+        def __set__(self, tuple distances):
+            assert len(distances) == 2
+            errcheck(clAmdFftSetPlanDistance(self.plan, distances[0], distances[1]))
+
+    property layouts:
+        def __get__(self):
+            cdef clAmdFftLayout layout_in, layout_out
+            errcheck(clAmdFftGetLayout(self.plan, &layout_in, &layout_out))
+            return (layout_in, layout_out)
+        def __set__(self, tuple layouts):
+            assert len(layouts) == 2
+            errcheck(clAmdFftSetLayout(self.plan, layouts[0], layouts[1]))
+        
     property inplace:
         def __get__(self):
             cdef clAmdFftResultLocation placeness
@@ -124,6 +221,26 @@ cdef class Plan(object):
             else:
                 placeness = CLFFT_OUTOFPLACE
             errcheck(clAmdFftSetResultLocation(self.plan, placeness))
+
+    property temp_array_size:
+        def __get__(self):
+            cdef size_t buffersize
+            errcheck(clAmdFftGetTmpBufSize(self.plan, &buffersize))
+            return buffersize
+
+    property transpose_result:
+        def __get__(self):
+            cdef clAmdFftResultTransposed transposed
+            errcheck(clAmdFftGetPlanTransposeResult(self.plan, &transposed))
+            return transposed == CLFFT_TRANSPOSED
+        def __set__(self, transpose):
+            cdef clAmdFftResultTransposed transposed
+            if transpose:
+                transposed = CLFFT_TRANSPOSED
+            else:
+                transposed = CLFFT_NOTRANSPOSE
+            errcheck(clAmdFftSetPlanTransposeResult(self.plan, transposed))
+                
 
     def bake(self, queue):
         cdef cl_command_queue queue_handle = <cl_command_queue><voidptr_t>queue.obj_ptr
