@@ -10,7 +10,7 @@ called:
 AMD Accelerated Parallel Processing Math Libraries<br/>
 http://developer.amd.com/libraries/appmathlibs/Pages/default.aspx
 
-But it doesn't generate a set of kernels and hand them back to the user to queue
+But it doesn't simply generate a set of kernels and hand them back to the user to queue
 up with the OpenCL kernel and event management system on his own.
 
 Its programming model wants to control that part of the transaction, handing 
@@ -118,7 +118,7 @@ Tested Platforms
     <td>HD7970<br/>(Tahiti 925MHz)</td>
     <td>works!</td>    
   </tr>
-  
+
 </table>
 
 (C) Gregor Thalhammer 2012
