@@ -109,6 +109,15 @@ Tested Platforms
     <td>AMD Phenom IIx4</td>
     <td>works!</td>    
   </tr>
+
+  <tr>
+    <td>Win7 (64 bit)</td>
+    <td>2.7 (32bit)</td>
+    <td>2.7</td>
+    <td>OpenCL 1.2<br/>AMD-APP<br/>(923.1)<p/></td>
+    <td>HD7970<br/>(Tahiti 925MHz)</td>
+    <td>works!</td>    
+  </tr>
   
 </table>
 
