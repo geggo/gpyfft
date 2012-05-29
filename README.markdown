@@ -91,6 +91,25 @@ Tested Platforms
     <td>Quadro 2000M</td>
     <td>Fails</td>    
   </tr>
+  
+  <tr>
+    <td>Win7 (64 bit)</td>
+    <td>2.7 (32bit)</td>
+    <td>2.7</td>
+    <td>OpenCL 1.2<br/>AMD-APP<br/>(923.1)<p/></td>
+    <td>Tahiti (7970)</td>
+    <td>works!</td>    
+  </tr>
+
+  <tr>
+    <td>Win7 (64 bit)</td>
+    <td>2.7 (32bit)</td>
+    <td>2.7</td>
+    <td>OpenCL 1.2<br/>AMD-APP<br/>(923.1)<p/></td>
+    <td>AMD Phenom IIx4</td>
+    <td>works!</td>    
+  </tr>
+  
 </table>
 
 (C) Gregor Thalhammer 2012
