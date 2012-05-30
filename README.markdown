@@ -46,10 +46,8 @@ Installation
 
 License:
 --------
- GPL
- <br/>
-(does it have to be a GPL?  Can we use one that's better for commercial and non-commercial use?)
-
+LGPL
+ 
 Tested Platforms
 ----------------
 <table width="100%">
