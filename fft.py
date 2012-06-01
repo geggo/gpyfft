@@ -68,8 +68,7 @@ class FFT(object):
         tdim = len(axes) #dimensionality transform
         assert tdim <= ddim
         
-        axes_transform = set(a + ddim if a<0 else a for a in axes)
-
+        axes_transform = tuple(a + ddim if a<0 else a for a in axes)
 
         axes_notransform = set(range(ddim)).difference(axes_transform)
         assert len(axes_notransform) < 2, 'more than one non-transformed axis'
@@ -118,7 +117,9 @@ queue = cl.CommandQueue(context)
 n_run = 10 #set to 1 for proper testing
 
 if n_run > 1:
-    nd_dataC = np.zeros((1024, 1024), dtype = np.complex64) #for benchmark
+    #nd_dataC = np.zeros((1024, 1024), dtype = np.complex64) #for benchmark
+    #nd_dataC = np.zeros((4,1024, 1024), dtype = np.complex64) #for benchmark
+    nd_dataC = np.zeros((128,128,128), dtype = np.complex64) #for benchmark
 else:
     nd_dataC = np.ones((1024, 1024), dtype = np.complex64) #set n_run to 1
 
@@ -134,7 +135,8 @@ resultF = cla.to_device(queue, np.asfortranarray(nd_result))
 result = resultF
 
 
-axes_list = [(0,), (1,), (0,1), (1,0)]
+axes_list = [(0,), (1,), (0,1)] #is (1,0) the same?
+axes_list = [(1,0), (0,1), (1,2), (2,1), (0,1,2), (2,1,0)]
 print 'out of place transforms'
 print 'axes         in out'
 for axes in axes_list:
