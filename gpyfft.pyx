@@ -254,7 +254,7 @@ cdef class Plan(object):
                          out_buffers = None,
                          direction_forward = True, 
                          wait_for_events = None, 
-                         temp_buffers = None,
+                         temp_buffer = None,
                          ):
         cdef clAmdFftDirection direction
         if direction_forward:
@@ -301,7 +301,10 @@ cdef class Plan(object):
                 out_buffers_array[i] = <cl_mem><voidptr_t>out_buffer.obj_ptr
             out_buffers_ = &out_buffers_array[0]
 
-        cdef cl_mem tmp_buffers_ = NULL #TODO: same as above
+        cdef cl_mem tmp_buffer_ = NULL
+        if temp_buffer is not None:
+            assert isinstance(temp_buffer, cl.Buffer)
+            tmp_buffer_ = <cl_mem><voidptr_t>temp_buffer.obj_ptr
 
         errcheck(clAmdFftEnqueueTransform(self.plan,
                                           direction,
@@ -312,7 +315,7 @@ cdef class Plan(object):
                                           NULL,
                                           &in_buffers_[0],
                                           out_buffers_,
-                                          tmp_buffers_))
+                                          tmp_buffer_))
 
         
         

@@ -1,37 +1,54 @@
-from numpy.fft import fftn as npfftn
 import gpyfft
 GFFT = gpyfft.GpyFFT()
+import time
+import numpy as np
 
 class FFT(object):
-    def __init__(self, context, queue, input_arrays, output_arrays, axes = None, direction = 'forward', fast_math = True):
+    def __init__(self, context, queue, input_arrays, output_arrays=None, axes = None, fast_math = False):
         self.context = context
         self.queue = queue
 
         in_array = input_arrays[0]
-        out_array = output_arrays[0]
-
         t_strides_in, t_distance_in, t_batchsize_in, t_shape = self.calculate_transform_strides(
             axes, in_array.shape, in_array.strides, in_array.dtype)
-        t_strides_out, t_distance_out, foo, bar = self.calculate_transform_strides(
-            axes, out_array.shape, out_array.strides, out_array.dtype)
+
+        if output_arrays is not None:
+            t_inplace = False
+            out_array = output_arrays[0]
+            t_strides_out, t_distance_out, foo, bar = self.calculate_transform_strides(
+                axes, out_array.shape, out_array.strides, out_array.dtype)
+        else:
+            t_inplace = True
+            out_array = None
+            t_strides_out, t_distance_out = t_strides_in, t_distance_in
+
+        self.t_shape = t_shape
+        self.batchsize = t_batchsize_in
 
         plan = GFFT.create_plan(context, t_shape)
-        plan.inplace = False
+        plan.inplace = t_inplace
         plan.strides_in = t_strides_in
         plan.strides_out = t_strides_out
         plan.distances = (t_distance_in, t_distance_out)
         plan.batch_size = t_batchsize_in #assert t_batchsize_in == t_batchsize_out
         
-        print 'axes', axes        
-        print 'in_array.shape:          ', in_array.shape
-        print 'in_array.strides/itemsize', tuple(s/in_array.dtype.itemsize for s in in_array.strides)
-        print 'shape transform          ', t_shape
-        print 't_strides                ', t_strides_in
-        print 'distance_in              ', t_distance_in
-        print 'batchsize                ', t_batchsize_in
-        print
+        if False:
+            print 'axes', axes        
+            print 'in_array.shape:          ', in_array.shape
+            print 'in_array.strides/itemsize', tuple(s/in_array.dtype.itemsize for s in in_array.strides)
+            print 'shape transform          ', t_shape
+            print 't_strides                ', t_strides_in
+            print 'distance_in              ', t_distance_in
+            print 'batchsize                ', t_batchsize_in
+            print 't_stride_out             ', t_strides_out
 
         plan.bake(self.queue)
+        temp_size = plan.temp_array_size
+        if temp_size:
+            #print 'temp_size:', plan.temp_array_size
+            self.temp_buffer = cl.Buffer(self.context, cl.mem_flags.READ_WRITE, size = temp_size)
+        else:
+            self.temp_buffer = None
 
         self.plan = plan
         self.data = in_array
@@ -74,9 +91,13 @@ class FFT(object):
 
         return (tuple(t_strides), t_distance, batchsize, tuple(t_shape))
 
-    def execute(self):
-
-        self.plan.enqueue_transform((self.queue,), (self.data.data,), (self.result.data))
+    def execute(self, forward = True):
+        if self.result is not None:
+            self.plan.enqueue_transform((self.queue,), (self.data.data,), (self.result.data),
+                                        direction_forward = forward, temp_buffer = self.temp_buffer)
+        else:
+            self.plan.enqueue_transform((self.queue,), (self.data.data,),
+                                        direction_forward = forward, temp_buffer = self.temp_buffer)
         queue.finish()
 
     def update_arrays(input_array, output_array):
@@ -86,39 +107,75 @@ class FFT(object):
 #real to complex: (forward) out_array.shape[axes][-1] = in_array.shape[axes][-1]//2 + 1
 
 import numpy as np
+from numpy.fft import fftn as npfftn
+from numpy.testing import assert_array_almost_equal
 import pyopencl as cl
 import pyopencl.array as cla
 
 context = cl.create_some_context()
 queue = cl.CommandQueue(context)
 
-nd_data = np.array([[1,2,3,4], [5,6,7,8]], dtype = np.complex64)
-cl_data = cla.to_device(queue, nd_data)
-#data = nd_data
-data = cl_data
-dataT = cla.to_device(queue, nd_data.T)
+n_run = 10 #set to 1 for proper testing
 
-nd_result = np.zeros_like(nd_data, dtype = np.complex64)
-cl_result = cla.to_device(queue, nd_result)
-result = cl_result
+if n_run > 1:
+    nd_dataC = np.zeros((1024, 1024), dtype = np.complex64) #for benchmark
+else:
+    nd_dataC = np.ones((1024, 1024), dtype = np.complex64) #set n_run to 1
+
+#nd_dataC = np.array([[1,2,3,4], [5,6,7,8]], dtype = np.complex64) #small array
+
+nd_dataF = np.asfortranarray(nd_dataC)
+dataC = cla.to_device(queue, nd_dataC)
+dataF = cla.to_device(queue, nd_dataF)
+
+nd_result = np.zeros_like(nd_dataC, dtype = np.complex64)
+resultC = cla.to_device(queue, nd_result)
+resultF = cla.to_device(queue, np.asfortranarray(nd_result))
+result = resultF
+
 
 axes_list = [(0,), (1,), (0,1), (1,0)]
+print 'out of place transforms'
+print 'axes         in out'
 for axes in axes_list:
-    transform = FFT(context, queue, (data,), (result,), axes = axes)
-    transform.execute()
-    print 'data'
-    print data
-    print 'result'
-    print result
-    print 'npfftn'
-    print npfftn(nd_data, axes = axes)
-    print '======='
-    print 
+    for data in (dataC, dataF):
+        for result in (resultC, resultF):
+    
+            transform = FFT(context, queue, (data,), (result,), axes = axes)
+            tic = time.clock()
+            for i in range(n_run):
+                transform.execute()
+            toc = time.clock()
+            t_ms = 1e3*(toc-tic)/n_run
+            gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
+            print '%-10s %3s %3s %5.2fms %4d Gflops'%(
+                axes,
+                'C' if data.flags.c_contiguous else 'F',  
+                'C' if result.flags.c_contiguous else 'F',  
+                t_ms, gflops
+                )
+            assert_array_almost_equal(result.get(), npfftn(data.get(), axes = axes))
 
-# FFT(context, (dataT,), (result,), axes = (0,))
-# FFT(context, (dataT,), (result,), axes = (1,))
-# FFT(context, (dataT,), (result,), axes = (0,1,))
-# FFT(context, (dataT,), (result,), axes = (1,0,))
+print
+print 'in place transforms', nd_dataC.shape
+
+for axes in axes_list:
+    for nd_data in (nd_dataC, nd_dataF):
+        data = cla.to_device(queue, nd_data)
+        transform = FFT(context, queue, (data,), axes = axes)
+        tic = time.clock()
+        for i in range(n_run//2):
+            transform.execute()
+        toc = time.clock()
+        t_ms = 1e3*(toc-tic)/n_run
+        gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
+        print '%-10s %3s %5.2fms %4d Gflops'%(
+            axes,
+            'C' if data.flags.c_contiguous else 'F',
+            t_ms, gflops
+            )
+        assert_array_almost_equal(data.get(), npfftn(nd_data, axes = axes))
+
 
 
 # #################
