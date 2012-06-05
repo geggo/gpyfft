@@ -242,10 +242,18 @@ cdef class Plan(object):
             errcheck(clAmdFftSetPlanTransposeResult(self.plan, transposed))
                 
 
-    def bake(self, queue):
-        cdef cl_command_queue queue_handle = <cl_command_queue><voidptr_t>queue.obj_ptr
+    def bake(self, queues):
+        if isinstance(queues, cl.CommandQueue):
+            queues = (queues,)
+        cdef int n_queues = len(queues)
+        assert n_queues <= MAX_QUEUES
+        cdef cl_command_queue queues_[MAX_QUEUES]
+        cdef int i
+        for i in range(n_queues):
+            assert isinstance(queues[i], cl.CommandQueue)
+            queues_[i] = <cl_command_queue><voidptr_t>queues[i].obj_ptr
         errcheck(clAmdFftBakePlan(self.plan,
-                                  1, &queue_handle,
+                                  n_queues, queues_,
                                   NULL, NULL))
 
     def enqueue_transform(self, 
@@ -256,16 +264,19 @@ cdef class Plan(object):
                          wait_for_events = None, 
                          temp_buffer = None,
                          ):
+        cdef int i
+
         cdef clAmdFftDirection direction
         if direction_forward:
             direction = CLFFT_FORWARD
         else:
-            direction = CLFFT_FORWARD
+            direction = CLFFT_BACKWARD
             
         cdef cl_command_queue queues_[MAX_QUEUES]
         if isinstance(queues, cl.CommandQueue):
             queues = (queues,)
         n_queues = len(queues)
+        assert n_queues <= MAX_QUEUES
         for i, queue in enumerate(queues):
             assert isinstance(queue, cl.CommandQueue)
             queues_[i] = <cl_command_queue><voidptr_t>queue.obj_ptr
@@ -275,6 +286,7 @@ cdef class Plan(object):
         cdef n_waitfor_events = 0
         if wait_for_events is not None:
             n_waitfor_events = len(wait_for_events)
+            assert n_waitfor_events <= MAX_WAITFOR_EVENTS
             for i, event in enumerate(wait_for_events):
                 assert isinstance(event, cl.Event)
                 wait_for_events_array[i] = <cl_event><voidptr_t>event.obj_ptr
@@ -306,18 +318,21 @@ cdef class Plan(object):
             assert isinstance(temp_buffer, cl.Buffer)
             tmp_buffer_ = <cl_mem><voidptr_t>temp_buffer.obj_ptr
 
+        cdef cl_event out_cl_events[MAX_QUEUES]
+
         errcheck(clAmdFftEnqueueTransform(self.plan,
                                           direction,
                                           n_queues,
                                           &queues_[0],
                                           n_waitfor_events,
                                           &wait_for_events_[0],
-                                          NULL,
+                                          out_cl_events,
                                           &in_buffers_[0],
                                           out_buffers_,
                                           tmp_buffer_))
-
         
+        return tuple((cl.Event.from_cl_event_as_int(<long>out_cl_events[i]) for i in range(n_queues)))
+            
         
             
         
