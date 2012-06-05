@@ -10,32 +10,54 @@ called:
 AMD Accelerated Parallel Processing Math Libraries<br/>
 http://developer.amd.com/libraries/appmathlibs/Pages/default.aspx
 
-But it doesn't simply generate a set of kernels and hand them back to the user to queue
-up with the OpenCL kernel and event management system on his own.
+This C library is available as precompiled binaries for Windows and
+Linux platforms. 
 
-Its programming model wants to control that part of the transaction, handing 
-control back to the user only after the results are written to the output buffers.
+This python wrapper is designed to tightly integrate with pyopencl. It
+consists of a low-level cython based wrapper with an interface similar
+to the underlying C library. On top of that it offers a high-level
+interface designed to work on data contained in instances of
+pyopencl.array.Array, a numpy work-alike array class. The high-level
+interface is similar to that of
+[pyFFTW](https://github.com/hgomersal/pyFFTW), a python wrapper for
+the FFTW library.
 
-So, if one wants to use this handy library with one's AMD setup and get the
-benefit of PyOpenCL's simplified OpenCL interface this library wrapper is needed 
-to make the AMD FFT library play nicely with PyOpenCL.
+Status
+------
+This wrapper is currently under development.
+
+### work done ###
+* low level wrapper (mostly) completed
+* high level wrapper: complex (single precision), interleaved data, in
+  and out of place (some tests and benchmarking available)
+* creation of pyopencl Events for synchronization
+  
+### missing features ###
+* debug mode to output generated kernels
+* documentation for low level wrapper (instead refer to library doc)
+* define API for high level interface
+* high level interface: double precision data, planar data, real<->complex transforms
+* high level interface: tests for non-contiguous data
+* handling of batched transforms in the general case, e.g. shape
+  (4,5,6), axes = (1,), i.e., more than one axes where no transform is
+  performed. (not always possible with single call for arbitrary
+  strides, need to figure out when possible)
 
 Requirements
 ------------
 * python
+* pyopencl (git version newer than 4 Jun 2012)
 * cython
-* pyopencl
 * APPML clAmdFft 1.8
 * AMD APP SDK
 
 Installation
 ------------
+1) Install the AMD library:
 
-1)  Install the AMD library:
-
-    * install clAmdFft
-    * add clAmdFft/binXX to PATH, or copy clAmdFft.Runtime.dll to package directory
-    * edit setup.py to point to clAmdFft and AMD APP directories
+   * install clAmdFft
+   * add clAmdFft/binXX to PATH, or copy clAmdFft.Runtime.dll to package directory
+   * edit setup.py to point to clAmdFft and AMD APP directories
 
   Then, either:
   
@@ -58,8 +80,8 @@ Tested Platforms
     <td>Win7 (64 bit)</td>
     <td>2.7 (64bit)</td>
     <td>2.7</td>
-    <td>?<p/></td>
-    <td>AMD 6850</td>
+    <td>OpenCL 1.2<br/>Catalyst 12.4</td>
+    <td>Cayman (6850)</td>
     <td>works!</td>
   </tr>
   
