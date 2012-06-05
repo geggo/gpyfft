@@ -90,14 +90,14 @@ class FFT(object):
 
         return (tuple(t_strides), t_distance, batchsize, tuple(t_shape))
 
-    def execute(self, forward = True):
+    def enqueue(self, forward = True):
         if self.result is not None:
-            self.plan.enqueue_transform((self.queue,), (self.data.data,), (self.result.data),
+            events = self.plan.enqueue_transform((self.queue,), (self.data.data,), (self.result.data),
                                         direction_forward = forward, temp_buffer = self.temp_buffer)
         else:
-            self.plan.enqueue_transform((self.queue,), (self.data.data,),
+            events = self.plan.enqueue_transform((self.queue,), (self.data.data,),
                                         direction_forward = forward, temp_buffer = self.temp_buffer)
-        queue.finish()
+        return events
 
     def update_arrays(input_array, output_array):
         pass
@@ -118,8 +118,8 @@ n_run = 10 #set to 1 for proper testing
 
 if n_run > 1:
     #nd_dataC = np.zeros((1024, 1024), dtype = np.complex64) #for benchmark
-    #nd_dataC = np.zeros((4,1024, 1024), dtype = np.complex64) #for benchmark
-    nd_dataC = np.zeros((128,128,128), dtype = np.complex64) #for benchmark
+    nd_dataC = np.zeros((4,1024, 1024), dtype = np.complex64) #for benchmark
+    #nd_dataC = np.zeros((128,128,128), dtype = np.complex64) #for benchmark
 else:
     nd_dataC = np.ones((1024, 1024), dtype = np.complex64) #set n_run to 1
 
@@ -136,8 +136,10 @@ result = resultF
 
 
 axes_list = [(0,), (1,), (0,1)] #is (1,0) the same?
-axes_list = [(1,0), (0,1), (1,2), (2,1), (0,1,2), (2,1,0)]
-print 'out of place transforms'
+axes_list = [(1,0), (0,1), (1,2), (2,1)]
+#axes_list = [(1,0), (0,1), (1,2), (2,1), (0,1,2), (2,1,0)]
+
+print 'out of place transforms', dataC.shape
 print 'axes         in out'
 for axes in axes_list:
     for data in (dataC, dataF):
@@ -146,7 +148,9 @@ for axes in axes_list:
             transform = FFT(context, queue, (data,), (result,), axes = axes)
             tic = time.clock()
             for i in range(n_run):
-                transform.execute()
+                events = transform.enqueue()
+            for e in events:
+                e.wait()
             toc = time.clock()
             t_ms = 1e3*(toc-tic)/n_run
             gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
@@ -167,7 +171,10 @@ for axes in axes_list:
         transform = FFT(context, queue, (data,), axes = axes)
         tic = time.clock()
         for i in range(n_run//2):
-            transform.execute()
+            events = transform.enqueue()
+        for e in events:
+                e.wait()
+           
         toc = time.clock()
         t_ms = 1e3*(toc-tic)/n_run
         gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
