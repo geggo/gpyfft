@@ -1,0 +1,288 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>gpyfft &mdash; gpyfft 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="gpyfft 0.1 documentation" href="index.html" />
+    <link rel="prev" title="Welcome to gpyfft’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to gpyfft’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">gpyfft 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="gpyfft">
+<h1>gpyfft<a class="headerlink" href="#gpyfft" title="Permalink to this headline">¶</a></h1>
+<p>A Python wrapper for the OpenCL FFT library APPML/clAmdFft from AMD</p>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>AMD has created a nice FFT library for use with their OpenCL
+implementation called <a class="reference external" href="http://developer.amd.com/libraries/appmathlibs/Pages/default.aspx">AMD Accelerated Parallel Processing Math
+Libraries</a>
+This C library is available as precompiled binaries for Windows and
+Linux platforms. It is optimized for AMD GPUs. (Note: This library is
+not limited to work only with hardware from AMD, but according to this
+<a class="reference external" href="http://devgurus.amd.com/thread/159149">forum entry</a> it currently
+yields wrong results on NVidia GPUs.)</p>
+<p>This python wrapper is designed to tightly integrate with pyopencl. It
+consists of a low-level cython based wrapper with an interface similar
+to the underlying C library. On top of that it offers a high-level
+interface designed to work on data contained in instances of
+pyopencl.array.Array, a numpy work-alike array class. The high-level
+interface is similar to that of <a class="reference external" href="https://github.com/hgomersal/pyFFTW">pyFFTW</a>, a python wrapper for the FFTW
+library.</p>
+<p>Compared to <a class="reference external" href="http://github.com/Manticore/pyfft">pyfft</a>, a python
+implementation of Apple&#8217;s FFT library, AMD&#8217;s FFT library offers some
+additional features such as transform sizes that are powers of 2,3 and
+5, and real-to-complex transforms. And on AMD hardware a better
+performance can be expected, e.g., gpyfft: 280 Gflops compared to
+pyfft: 63 GFlops (for single precision, accurate math,
+inplace, transform size 1024x1024, batch size 4, on AMD Cayman, HD6950).</p>
+</div>
+<div class="section" id="status">
+<h2>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<p>This wrapper is currently under development.</p>
+<div class="section" id="work-done">
+<h3>work done<a class="headerlink" href="#work-done" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>low level wrapper (mostly) completed</li>
+<li>high level wrapper: complex (single precision), interleaved data, in
+and out of place (some tests and benchmarking available)</li>
+<li>creation of pyopencl Events for synchronization</li>
+</ul>
+</div>
+<div class="section" id="missing-features">
+<h3>missing features<a class="headerlink" href="#missing-features" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>debug mode to output generated kernels</li>
+<li>documentation for low level wrapper (instead refer to library doc)</li>
+<li>define API for high level interface</li>
+<li>high level interface: double precision data, planar data,
+real&lt;-&gt;complex transforms</li>
+<li>high level interface: tests for non-contiguous data</li>
+<li>handling of batched transforms in the general case, e.g. shape
+(4,5,6), axes = (1,), i.e., more than one axes where no transform is
+performed. (not always possible with single call for arbitrary
+strides, need to figure out when possible)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>python</li>
+<li>pyopencl (git version newer than 4 Jun 2012)</li>
+<li>cython</li>
+<li>APPML clAmdFft 1.8</li>
+<li>AMD APP SDK</li>
+</ul>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Install the AMD library:<ul>
+<li>install clAmdFft</li>
+<li>add clAmdFft/binXX to PATH, or copy clAmdFft.Runtime.dll to
+package directory</li>
+<li>edit setup.py to point to clAmdFft and AMD APP directories</li>
+</ul>
+</li>
+</ol>
+<p>Then, either:</p>
+<ol class="arabic simple" start="2">
+<li>python setup.py install</li>
+</ol>
+<p>Or:</p>
+<ol class="arabic simple" start="3">
+<li>inplace build: python setup.py build_ext &#8211;inplace</li>
+</ol>
+</div>
+<div class="section" id="license">
+<h2>License:<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>LGPL</p>
+</div>
+<div class="section" id="tested-platforms">
+<h2>Tested Platforms<a class="headerlink" href="#tested-platforms" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="16%" />
+<col width="10%" />
+<col width="24%" />
+<col width="23%" />
+<col width="14%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>OS</td>
+<td>Python</td>
+<td>AMD APP</td>
+<td>OpenCL</td>
+<td>Device</td>
+<td>Status</td>
+</tr>
+<tr class="row-even"><td>Win7
+(64bit)</td>
+<td>2.7, 64bit</td>
+<td>2.7</td>
+<td>OpenCL 1.2,
+Catalyst 12.4</td>
+<td>AMD Cayman
+(6950)</td>
+<td>works!</td>
+</tr>
+<tr class="row-odd"><td>Win7
+(64bit)</td>
+<td>2.7, 32bit</td>
+<td>2.7</td>
+<td>OpenCL 1.1
+AMD-APP-SDK-v2.4
+(595.10)</td>
+<td>Intel i7</td>
+<td>works!</td>
+</tr>
+<tr class="row-even"><td>Win7
+(64bit)</td>
+<td>2.7, 32bit</td>
+<td>2.7</td>
+<td>OpenCL 1.1
+(Intel)</td>
+<td>Intel i7</td>
+<td>works!</td>
+</tr>
+<tr class="row-odd"><td>Win7
+(64bit)</td>
+<td>2.7, 32bit</td>
+<td>2.7</td>
+<td>OpenCL 1.0 CUDA
+4.0.1 (NVIDIA)</td>
+<td>Quadro 2000M</td>
+<td>Fails</td>
+</tr>
+<tr class="row-even"><td>Win7
+(64bit)</td>
+<td>2.7, 32bit</td>
+<td>2.7</td>
+<td>OpenCL 1.2
+AMD-APP (923.1)</td>
+<td>Tahiti (7970)</td>
+<td>works!</td>
+</tr>
+<tr class="row-odd"><td>Win7
+(64bit)</td>
+<td>2.7, 32bit</td>
+<td>2.7</td>
+<td>OpenCL 1.2
+AMD-APP (923.1)</td>
+<td>AMD Phenom IIx4</td>
+<td>works!</td>
+</tr>
+</tbody>
+</table>
+<ol class="upperalpha simple" start="3">
+<li>Gregor Thalhammer 2012</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">gpyfft</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#status">Status</a><ul>
+<li><a class="reference internal" href="#work-done">work done</a></li>
+<li><a class="reference internal" href="#missing-features">missing features</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#license">License:</a></li>
+<li><a class="reference internal" href="#tested-platforms">Tested Platforms</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to gpyfft&#8217;s documentation!</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/includeme.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to gpyfft’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">gpyfft 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Gregor Thalhammer.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
