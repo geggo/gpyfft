@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>gpyfft class structure &mdash; gpyfft 0.1 documentation</title>
+    <title>3. gpyfft class structure &mdash; gpyfft 0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -26,7 +26,8 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="gpyfft 0.1 documentation" href="index.html" />
-    <link rel="prev" title="Building gpyfft" href="building.html" /> 
+    <link rel="next" title="3.1. GpyFFT" href="gpyfft.html" />
+    <link rel="prev" title="2. Building gpyfft" href="building.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,7 +37,10 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="building.html" title="Building gpyfft"
+          <a href="gpyfft.html" title="3.1. GpyFFT"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="building.html" title="2. Building gpyfft"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">gpyfft 0.1 documentation</a> &raquo;</li> 
       </ul>
@@ -48,318 +52,14 @@
           <div class="body">
             
   <div class="section" id="gpyfft-class-structure">
-<h1>gpyfft class structure<a class="headerlink" href="#gpyfft-class-structure" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="gpyfft.GpyFFT">
-<em class="property">class </em><tt class="descclassname">gpyfft.</tt><tt class="descname">GpyFFT</tt><a class="headerlink" href="#gpyfft.GpyFFT" title="Permalink to this definition">¶</a></dt>
-<dd><p>The GpyFFT object is the primary interface to the AMD FFT library</p>
-<p class="rubric">Methods</p>
-<dl class="method">
-<dt id="gpyfft.GpyFFT.get_version">
-<tt class="descname">get_version</tt><big>(</big><big>)</big><a class="headerlink" href="#gpyfft.GpyFFT.get_version" title="Permalink to this definition">¶</a></dt>
-<dd><p>returns the version of the underlying AMD FFT library</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd><p class="first">A tuple with the major, minor, and patch level of the AMD
-FFT library.</p>
-<p class="last">example:
-(1L, 8L, 214L)</p>
-</dd>
-<dt>Raises:</dt>
-<dd>GpyFFT_Error: An error occurred accessing the clAmdFftGetVersion
-function</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="gpyfft.GpyFFT.create_plan">
-<tt class="descname">create_plan</tt><big>(</big><big>)</big><a class="headerlink" href="#gpyfft.GpyFFT.create_plan" title="Permalink to this definition">¶</a></dt>
-<dd><p>creates an FFT plan based on the dimensionality of the input data</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>context (object) : a PyOpenCL Context object 
-shape (tuple)    : the dimensionality of the input data</dd>
-<dt>Kwargs:</dt>
-<dd>None</dd>
-<dt>Returns:</dt>
-<dd>Plan (object)    : a gpyfft.Plan object</dd>
-<dt>Raises:</dt>
-<dd>None</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="gpyfft.GpyFFT.foo">
-<tt class="descname">foo</tt><big>(</big><big>)</big><a class="headerlink" href="#gpyfft.GpyFFT.foo" title="Permalink to this definition">¶</a></dt>
-<dd><p>A one-line summary that does not use variable names or the
-function name.</p>
-<p>Several sentences providing an extended description. Refer to
-variables using back-ticks, e.g. <cite>var</cite>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>var1</strong> : array_like</p>
-<blockquote>
-<div><p>Array_like means all those objects &#8211; lists, nested lists, etc. &#8211;
-that can be converted to an array.  We can also refer to
-variables like <cite>var1</cite>.</p>
-</div></blockquote>
-<p><strong>var2</strong> : int</p>
-<blockquote>
-<div><p>The type above can either refer to an actual Python type
-(e.g. <tt class="docutils literal"><span class="pre">int</span></tt>), or describe the type of the variable in more
-detail, e.g. <tt class="docutils literal"><span class="pre">(N,)</span> <span class="pre">ndarray</span></tt> or <tt class="docutils literal"><span class="pre">array_like</span></tt>.</p>
-</div></blockquote>
-<p><strong>Long_variable_name</strong> : {&#8216;hi&#8217;, &#8216;ho&#8217;}, optional</p>
-<blockquote>
-<div><p>Choices in brackets, default first when optional.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>describe</strong> : type</p>
-<blockquote>
-<div><p>Explanation</p>
-</div></blockquote>
-<p><strong>output</strong> : type</p>
-<blockquote>
-<div><p>Explanation</p>
-</div></blockquote>
-<p><strong>tuple</strong> : type</p>
-<blockquote>
-<div><p>Explanation</p>
-</div></blockquote>
-<p><strong>items</strong> : type</p>
-<blockquote>
-<div><p>even more explaining</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">Other Parameters:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>only_seldom_used_keywords</strong> : type</p>
-<blockquote>
-<div><p>Explanation</p>
-</div></blockquote>
-<p><strong>common_parameters_listed_above</strong> : type</p>
-<blockquote>
-<div><p>Explanation</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises :</th><td class="field-body"><p class="first"><strong>BadException</strong> :</p>
-<blockquote class="last">
-<div><p>Because you shouldn&#8217;t have done that.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition-see-also admonition seealso">
-<p class="first admonition-title">See also</p>
-<dl class="docutils">
-<dt><tt class="xref py py-obj docutils literal"><span class="pre">otherfunc</span></tt></dt>
-<dd>relationship (optional)</dd>
-<dt><tt class="xref py py-obj docutils literal"><span class="pre">newfunc</span></tt></dt>
-<dd>Relationship (optional), which could be fairly long, in which case the line wraps here.</dd>
-</dl>
-<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">thirdfunc</span></tt>, <tt class="xref py py-obj docutils literal"><span class="pre">fourthfunc</span></tt>, <tt class="xref py py-obj docutils literal"><span class="pre">fifthfunc</span></tt></p>
+<h1>3. gpyfft class structure<a class="headerlink" href="#gpyfft-class-structure" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="gpyfft.html">3.1. GpyFFT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plan.html">3.2. Plan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gpyfft_error.html">3.3. GpyFFT_Error</a></li>
+</ul>
 </div>
-<p class="rubric">Notes</p>
-<p>Notes about the implementation algorithm (if needed).</p>
-<p>This can have multiple paragraphs.</p>
-<p>You may include some math:</p>
-<div class="math">
-\begin{equation*}
-X(e^{j\omega } ) = x(n)e^{ - j\omega n}
-\end{equation*}
-</div>
-<p>And even use a greek symbol like <span class="math">
-\(omega\)</span>
- inline.</p>
-<p class="rubric">References</p>
-<p>Cite the relevant literature, e.g. <a class="reference internal" href="#r1">[R1]</a>.  You may also cite these
-references in the notes section above.</p>
-<table class="docutils citation" frame="void" id="r1" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label">[R1]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>)</em> O. McNoleg, &#8220;The integration of GIS, remote sensing,
-expert systems and adaptive co-kriging for environmental habitat
-modelling of the Highland Haggis using object-oriented, fuzzy-logic
-and neural-network techniques,&#8221; Computers &amp; Geosciences, vol. 22,
-pp. 585-588, 1996.</td></tr>
-</tbody>
-</table>
-<p class="rubric">Examples</p>
-<p>These are written in doctest format, and should illustrate how to
-use the function.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="p">[</span><span class="n">x</span> <span class="o">+</span> <span class="mi">3</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
-<span class="go">[4, 5, 6]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&quot;a</span><span class="se">\n\n</span><span class="s">b&quot;</span>
-<span class="go">a</span>
-<span class="go">b</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="gpyfft.Plan">
-<em class="property">class </em><tt class="descclassname">gpyfft.</tt><tt class="descname">Plan</tt><a class="headerlink" href="#gpyfft.Plan" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Plan object gathers information about the desired transforms and
-about the underlying OpenCL implementation and performs the bake operation
-and generates OpenCL kernels</p>
-<p class="rubric">Methods</p>
-<dl class="attribute">
-<dt id="gpyfft.Plan.__init__">
-<tt class="descname">__init__</tt><a class="headerlink" href="#gpyfft.Plan.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Instantiates a Plan object.</p>
-<blockquote>
-<div>Plan objects are created internally by gpyfft; normally
-a user does not create these objects</div></blockquote>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>context (object) : a PyOpenCL Context object 
-shape (tuple)    : the dimensionality of the input data
-lib (not sure)   : not sure what this is</dd>
-<dt>Kwargs:</dt>
-<dd>None</dd>
-<dt>Raises:</dt>
-<dd>None</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="gpyfft.Plan.precision">
-<tt class="descname">precision</tt><a class="headerlink" href="#gpyfft.Plan.precision" title="Permalink to this definition">¶</a></dt>
-<dd><p>the floating point precision of the FFT data</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="gpyfft.Plan.scale_forward">
-<tt class="descname">scale_forward</tt><a class="headerlink" href="#gpyfft.Plan.scale_forward" title="Permalink to this definition">¶</a></dt>
-<dd><p>the scaling factor to be applied to the FFT data for forward transforms</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="gpyfft.Plan.scale_backward">
-<tt class="descname">scale_backward</tt><a class="headerlink" href="#gpyfft.Plan.scale_backward" title="Permalink to this definition">¶</a></dt>
-<dd><p>the scaling factor to be applied to the FFT data for backward transforms</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="gpyfft.Plan.batch_size">
-<tt class="descname">batch_size</tt><a class="headerlink" href="#gpyfft.Plan.batch_size" title="Permalink to this definition">¶</a></dt>
-<dd><p>the number of discrete arrays that this plan can handle concurrently</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="gpyfft.Plan.shape">
-<tt class="descname">shape</tt><a class="headerlink" href="#gpyfft.Plan.shape" title="Permalink to this definition">¶</a></dt>
-<dd><p>the length of each dimension of the FFT</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="gpyfft.Plan.strides_in">
-<tt class="descname">strides_in</tt><a class="headerlink" href="#gpyfft.Plan.strides_in" title="Permalink to this definition">¶</a></dt>
-<dd><p>the distance between consecutive elements for input buffers 
-in a dimension</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="gpyfft.Plan.strides_out">
-<tt class="descname">strides_out</tt><a class="headerlink" href="#gpyfft.Plan.strides_out" title="Permalink to this definition">¶</a></dt>
-<dd><p>the distance between consecutive elements for output buffers 
-in a dimension</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="gpyfft.Plan.distances">
-<tt class="descname">distances</tt><a class="headerlink" href="#gpyfft.Plan.distances" title="Permalink to this definition">¶</a></dt>
-<dd><p>the distance between array objects</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="gpyfft.Plan.layouts">
-<tt class="descname">layouts</tt><a class="headerlink" href="#gpyfft.Plan.layouts" title="Permalink to this definition">¶</a></dt>
-<dd><p>the expected layout of the output buffers</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="gpyfft.Plan.inplace">
-<tt class="descname">inplace</tt><a class="headerlink" href="#gpyfft.Plan.inplace" title="Permalink to this definition">¶</a></dt>
-<dd><p>determines if the input buffers are going to be overwritten with 
-results (True == inplace, False == out of place)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="gpyfft.Plan.temp_array_size">
-<tt class="descname">temp_array_size</tt><a class="headerlink" href="#gpyfft.Plan.temp_array_size" title="Permalink to this definition">¶</a></dt>
-<dd><p>the buffer size (in bytes), which may be needed internally for an
-intermediate buffer</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="gpyfft.Plan.transpose_result">
-<tt class="descname">transpose_result</tt><a class="headerlink" href="#gpyfft.Plan.transpose_result" title="Permalink to this definition">¶</a></dt>
-<dd><p>the final transpose setting of a multi-dimensional FFT</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="gpyfft.Plan.bake">
-<tt class="descname">bake</tt><big>(</big><big>)</big><a class="headerlink" href="#gpyfft.Plan.bake" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prepare the plan for execution</p>
-<p>After all plan parameters are set, the client has the option of &#8220;baking&#8221; the plan, which tells the
-runtime no more changes to the plan&#8217;s parameters are expected, and the OpenCL kernels are
-to be compiled. This optional function allows the client application to perform this function when
-the application is being initialized instead of on the first execution. At this point, the clAmdFft
-runtime applies all implemented optimizations, possibly including running kernel experiments on
-the devices in the plan context.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>queues (not sure) : not sure</dd>
-<dt>Kwargs:</dt>
-<dd>None</dd>
-<dt>Returns:</dt>
-<dd>None</dd>
-<dt>Raises:</dt>
-<dd>gpyfft.GpyFFT_Error  : clAmdFftBakePlan returned an error</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="gpyfft.Plan.enqueue_transform">
-<tt class="descname">enqueue_transform</tt><big>(</big><big>)</big><a class="headerlink" href="#gpyfft.Plan.enqueue_transform" title="Permalink to this definition">¶</a></dt>
-<dd><p>Enqueue an FFT transform operation, and either return immediately, or block 
-waiting for events.</p>
-<p>This transform API is specific to the interleaved complex format, taking an input buffer with real
-and imaginary components paired together, and outputting the results into an output buffer in the
-same format.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>queues (not sure)        : not sure
-in_buffers (?)           : not sure</dd>
-<dt>Kwargs:       </dt>
-<dd>out_buffers (?)          : not sure
-direction_forward (bool) : not sure
-wait_for_events (bool)   : not sure
-temp_buffer (?)          : not sure</dd>
-<dt>Returns:</dt>
-<dd>tuple of event objects?</dd>
-<dt>Raises:</dt>
-<dd>gpyfft.GpyFFT_Error  : clAmdFftEnqueueTransform returned an error</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="gpyfft.GpyFFT_Error">
-<em class="property">class </em><tt class="descclassname">gpyfft.</tt><tt class="descname">GpyFFT_Error</tt><a class="headerlink" href="#gpyfft.GpyFFT_Error" title="Permalink to this definition">¶</a></dt>
-<dd><p>Exception wrapper for errors returned from underlying AMD library calls</p>
-</dd></dl>
-
 </div>
 
 
@@ -370,7 +70,10 @@ temp_buffer (?)          : not sure</dd>
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="building.html"
-                        title="previous chapter">Building gpyfft</a></p>
+                        title="previous chapter">2. Building gpyfft</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="gpyfft.html"
+                        title="next chapter">3.1. GpyFFT</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/code.txt"
@@ -400,7 +103,10 @@ temp_buffer (?)          : not sure</dd>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="building.html" title="Building gpyfft"
+          <a href="gpyfft.html" title="3.1. GpyFFT"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="building.html" title="2. Building gpyfft"
              >previous</a> |</li>
         <li><a href="index.html">gpyfft 0.1 documentation</a> &raquo;</li> 
       </ul>
