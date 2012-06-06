@@ -7,6 +7,7 @@ Welcome to gpyfft's documentation!
 ==================================
 
 .. toctree::
+   :numbered:
    :maxdepth: 2
 
    includeme
