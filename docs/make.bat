@@ -140,7 +140,7 @@ if "%1" == "latexpdf" (
 	chdir /D %PDFBUILDDIR%\latex
 	pdflatex %PDFBUILDDIR%\latex\gpyfft.tex
 	chdir /D %~dp0
-	copy %PDFBUILDDIR%\latex\*.pdf %PDF%
+	copy %PDFBUILDDIR%\latex\gpyfft.pdf %PDF%
 	if errorlevel 1 exit /b 1
 	echo.
 	echo.Build finished; the LaTeX files are in %PDFBUILDDIR%\latex.
