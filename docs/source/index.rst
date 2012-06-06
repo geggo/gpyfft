@@ -10,7 +10,9 @@ Welcome to gpyfft's documentation!
    :maxdepth: 2
 
    includeme
-
+   building
+   code
+   
 Indices and tables
 ==================
 

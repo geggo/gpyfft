@@ -101,7 +101,7 @@ cdef class GpyFFT(object):
 #@cython.internal
 cdef class Plan(object):
     """The Plan object gathers information about the desired transforms and
-    about the underlying OpenCL implementation and performs the "bake" operation
+    about the underlying OpenCL implementation and performs the bake operation
     and generates OpenCL kernels"""
 
     cdef clAmdFftPlanHandle plan
@@ -332,8 +332,8 @@ cdef class Plan(object):
     def bake(self, queues):
         """Prepare the plan for execution
         
-    After all plan parameters are set, the client has the option of ’baking’ the plan, which tells the
-    runtime no more changes to the plan’s parameters are expected, and the OpenCL kernels are
+    After all plan parameters are set, the client has the option of "baking" the plan, which tells the
+    runtime no more changes to the plan's parameters are expected, and the OpenCL kernels are
     to be compiled. This optional function allows the client application to perform this function when
     the application is being initialized instead of on the first execution. At this point, the clAmdFft
     runtime applies all implemented optimizations, possibly including running kernel experiments on
