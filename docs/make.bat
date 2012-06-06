@@ -1,13 +1,18 @@
-@ECHO OFF
+@echo off
 
 REM Command file for Sphinx documentation
 
 if "%SPHINXBUILD%" == "" (
 	set SPHINXBUILD=sphinx-build
 )
-set BUILDDIR=build
+
+set BUILDDIR=..\..\gpyfft-docs
+set PDFBUILDDIR=\tmp
+set PDF= ..\manual.pdf
+
 set ALLSPHINXOPTS=-d %BUILDDIR%/doctrees %SPHINXOPTS% source
 set I18NSPHINXOPTS=%SPHINXOPTS% source
+
 if NOT "%PAPER%" == "" (
 	set ALLSPHINXOPTS=-D latex_paper_size=%PAPER% %ALLSPHINXOPTS%
 	set I18NSPHINXOPTS=-D latex_paper_size=%PAPER% %I18NSPHINXOPTS%
@@ -28,6 +33,7 @@ if "%1" == "help" (
 	echo.  devhelp    to make HTML files and a Devhelp project
 	echo.  epub       to make an epub
 	echo.  latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter
+    echo.  latexpdf   to make pdf files
 	echo.  text       to make text files
 	echo.  man        to make manual pages
 	echo.  texinfo    to make Texinfo files
@@ -126,6 +132,18 @@ if "%1" == "latex" (
 	if errorlevel 1 exit /b 1
 	echo.
 	echo.Build finished; the LaTeX files are in %BUILDDIR%/latex.
+	goto end
+)
+
+if "%1" == "latexpdf" (
+	%SPHINXBUILD% -b latex %ALLSPHINXOPTS% %PDFBUILDDIR%/latex
+	chdir /D %PDFBUILDDIR%\latex
+	pdflatex %PDFBUILDDIR%\latex\gpyfft.tex
+	chdir /D %~dp0
+	copy %PDFBUILDDIR%\latex\*.pdf %PDF%
+	if errorlevel 1 exit /b 1
+	echo.
+	echo.Build finished; the LaTeX files are in %PDFBUILDDIR%\latex.
 	goto end
 )
 
