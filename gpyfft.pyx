@@ -1,12 +1,4 @@
 # -*- coding: latin-1 -*-
-"""
-.. module:: gpyfft
-   :platform: Windows, Linux
-   :synopsis: A Python wrapper for the OpenCL FFT library APPML/clAmdFft from AMD
-
-.. moduleauthor:: Gregor Thalhammer
-"""
-
 import cython
 import pyopencl as cl
 
@@ -28,7 +20,6 @@ error_dict = {
     }
 
 class GpyFFT_Error(Exception):
-    """This is the error"""
     def __init__(self, errorcode):
         self.errorcode = errorcode
 
@@ -50,8 +41,6 @@ cdef inline bint errcheck(clAmdFftStatus result) except True:
 #main class
 #TODO: need to initialize (and destroy) at module level
 cdef class GpyFFT(object):
-    """The GpyFFT object is the primary interface to the AMD FFT library"""
-
     def __cinit__(self): #TODO: add debug flag
         cdef clAmdFftSetupData setup_data
         errcheck(clAmdFftInitSetupData(&setup_data))
@@ -59,54 +48,19 @@ cdef class GpyFFT(object):
 
     def __dealloc__(self):
         errcheck(clAmdFftTeardown())
-    
+
     def get_version(self):
-        """returns the version of the underlying AMD FFT library
-
-    Returns:
-        A tuple with the major, minor, and patch level of the AMD
-        FFT library.
-
-        example:
-        (1L, 8L, 214L)
-
-    Raises:
-        GpyFFT_Error: An error occurred accessing the clAmdFftGetVersion
-        function
-        """
-        
         cdef cl_uint major, minor, patch
         errcheck(clAmdFftGetVersion(&major, &minor, &patch))
         return (major, minor, patch)
-
-        
+    
     def create_plan(self, context, tuple shape):
-        """creates an FFT plan based on the dimensionality of the input data
-        
-    Args:
-       context (object) : a PyOpenCL Context object 
-       shape (tuple)    : the dimensionality of the input data
-       
-    Kwargs:
-       None
-
-    Returns:
-       Plan (object)    : a gpyfft.Plan object
-
-    Raises:
-        None
-        """
-
         return Plan(context, shape, self)
      
- 
-# if Plan is NOT internal, then sphinx will capture it 
-#@cython.internal
+        
+@cython.internal
 cdef class Plan(object):
-    """The Plan object gathers information about the desired transforms and
-    about the underlying OpenCL implementation and performs the "bake" operation
-    and generates OpenCL kernels"""
-    
+
     cdef clAmdFftPlanHandle plan
     cdef object lib
 
@@ -118,23 +72,6 @@ cdef class Plan(object):
         self.plan = 0
 
     def __init__(self, context, tuple shape, lib):
-        """Instantiates a Plan object.
-        
-        Plan objects are created internally by gpyfft; normally
-        a user does not create these objects
-        
-    Args:
-       context (object) : a PyOpenCL Context object 
-       shape (tuple)    : the dimensionality of the input data
-       lib (not sure)   : not sure what this is
-       
-    Kwargs:
-       None
-
-    Raises:
-        None
-        """
-        
         self.lib = lib
         if not isinstance(context, cl.Context):
             raise TypeError('expected cl.Context as type of first argument')
@@ -153,7 +90,6 @@ cdef class Plan(object):
         clAmdFftCreateDefaultPlan(&self.plan, context_handle, ndim, &lengths[0])
 
     property precision:
-        """the floating point precision of the FFT data"""
         def __get__(self):
             cdef clAmdFftPrecision precision
             errcheck(clAmdFftGetPlanPrecision(self.plan, &precision))
@@ -162,7 +98,6 @@ cdef class Plan(object):
             errcheck(clAmdFftSetPlanPrecision(self.plan, value))
 
     property scale_forward:
-        """the scaling factor to be applied to the FFT data for forward transforms"""
         def __get__(self):
             cdef cl_float scale
             errcheck(clAmdFftGetPlanScale(self.plan, CLFFT_FORWARD, &scale))
@@ -171,7 +106,6 @@ cdef class Plan(object):
             errcheck(clAmdFftSetPlanScale(self.plan, CLFFT_FORWARD, value))
 
     property scale_backward:
-        """the scaling factor to be applied to the FFT data for backward transforms"""    
         def __get__(self):
             cdef cl_float scale
             errcheck(clAmdFftGetPlanScale(self.plan, CLFFT_BACKWARD, &scale))
@@ -180,7 +114,6 @@ cdef class Plan(object):
             errcheck(clAmdFftSetPlanScale(self.plan, CLFFT_BACKWARD, value))
 
     property batch_size:
-        """the number of discrete arrays that this plan can handle concurrently"""
         def __get__(self):
             cdef size_t nbatch
             errcheck(clAmdFftGetPlanBatchSize(self.plan, &nbatch))
@@ -189,24 +122,12 @@ cdef class Plan(object):
             errcheck(clAmdFftSetPlanBatchSize(self.plan, nbatch))
 
     cdef clAmdFftDim get_dim(self):
-        """retrieve the dimensionality of FFTs to be transformed in the plan
-       
-    Args:
-       None       
-    Kwargs:
-       None
-
-    Raises:
-       gpyfft.GpyFFT_Error  : clAmdFftGetPlanDim returned an error
-        """
-        
         cdef clAmdFftDim dim
         cdef cl_uint size
         errcheck(clAmdFftGetPlanDim(self.plan, &dim, &size))
         return dim
             
     property shape:
-        """the length of each dimension of the FFT"""
         def __get__(self):
             cdef clAmdFftDim dim = self.get_dim()
             cdef size_t sizes[3]
@@ -229,8 +150,6 @@ cdef class Plan(object):
             errcheck(clAmdFftSetPlanLength(self.plan, dim, &sizes[0]))
 
     property strides_in:
-        """the distance between consecutive elements for input buffers 
-        in a dimension"""
         def __get__(self):
             cdef clAmdFftDim dim = self.get_dim()
             cdef size_t strides[3]
@@ -252,8 +171,6 @@ cdef class Plan(object):
             errcheck(clAmdFftSetPlanInStride(self.plan, dim, &c_strides[0]))
 
     property strides_out:
-        """the distance between consecutive elements for output buffers 
-        in a dimension"""    
         def __get__(self):
             cdef clAmdFftDim dim = self.get_dim()
             cdef size_t strides[3]
@@ -275,7 +192,6 @@ cdef class Plan(object):
             errcheck(clAmdFftSetPlanOutStride(self.plan, dim, &c_strides[0]))
             
     property distances:
-        """the distance between array objects"""
         def __get__(self):
             cdef size_t dist_in, dist_out
             errcheck(clAmdFftGetPlanDistance(self.plan, &dist_in, &dist_out))
@@ -285,7 +201,6 @@ cdef class Plan(object):
             errcheck(clAmdFftSetPlanDistance(self.plan, distances[0], distances[1]))
 
     property layouts:
-        """the expected layout of the output buffers"""    
         def __get__(self):
             cdef clAmdFftLayout layout_in, layout_out
             errcheck(clAmdFftGetLayout(self.plan, &layout_in, &layout_out))
@@ -295,8 +210,6 @@ cdef class Plan(object):
             errcheck(clAmdFftSetLayout(self.plan, layouts[0], layouts[1]))
         
     property inplace:
-        """determines if the input buffers are going to be overwritten with 
-        results (True == inplace, False == out of place)"""
         def __get__(self):
             cdef clAmdFftResultLocation placeness
             errcheck(clAmdFftGetResultLocation(self.plan, &placeness))
@@ -310,15 +223,12 @@ cdef class Plan(object):
             errcheck(clAmdFftSetResultLocation(self.plan, placeness))
 
     property temp_array_size:
-        """the buffer size (in bytes), which may be needed internally for an
-        intermediate buffer"""
         def __get__(self):
             cdef size_t buffersize
             errcheck(clAmdFftGetTmpBufSize(self.plan, &buffersize))
             return buffersize
 
     property transpose_result:
-        """the final transpose setting of a multi-dimensional FFT"""
         def __get__(self):
             cdef clAmdFftResultTransposed transposed
             errcheck(clAmdFftGetPlanTransposeResult(self.plan, &transposed))
@@ -333,28 +243,6 @@ cdef class Plan(object):
                 
 
     def bake(self, queues):
-        """Prepare the plan for execution
-        
-    After all plan parameters are set, the client has the option of ’baking’ the plan, which tells the
-    runtime no more changes to the plan’s parameters are expected, and the OpenCL kernels are
-    to be compiled. This optional function allows the client application to perform this function when
-    the application is being initialized instead of on the first execution. At this point, the clAmdFft
-    runtime applies all implemented optimizations, possibly including running kernel experiments on
-    the devices in the plan context.       
-        
-    Args:
-       queues (not sure) : not sure
-       
-    Kwargs:
-       None
-
-    Returns:
-       None
-       
-    Raises:
-       gpyfft.GpyFFT_Error  : clAmdFftBakePlan returned an error
-        """
-    
         if isinstance(queues, cl.CommandQueue):
             queues = (queues,)
         cdef int n_queues = len(queues)
@@ -368,7 +256,6 @@ cdef class Plan(object):
                                   n_queues, queues_,
                                   NULL, NULL))
 
-                                  
     def enqueue_transform(self, 
                          queues, 
                          in_buffers, 
@@ -377,29 +264,6 @@ cdef class Plan(object):
                          wait_for_events = None, 
                          temp_buffer = None,
                          ):
-        """Enqueue an FFT transform operation, and either return immediately, or block 
-        waiting for events.
-
-    This transform API is specific to the interleaved complex format, taking an input buffer with real
-    and imaginary components paired together, and outputting the results into an output buffer in the
-    same format.
-    
-    Args:
-       queues (not sure)        : not sure
-       in_buffers (?)           : not sure
-       
-    Kwargs:       
-       out_buffers (?)          : not sure
-       direction_forward (bool) : not sure
-       wait_for_events (bool)   : not sure
-       temp_buffer (?)          : not sure
-      
-    Returns:
-       tuple of event objects?
-       
-    Raises:
-       gpyfft.GpyFFT_Error  : clAmdFftEnqueueTransform returned an error
-        """
         cdef int i
 
         cdef clAmdFftDirection direction
