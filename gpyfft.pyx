@@ -1,7 +1,7 @@
 # -*- coding: latin-1 -*-
 """
 .. module:: gpyfft
-   :platform: Windows, Linux
+   :platform: Windows
    :synopsis: A Python wrapper for the OpenCL FFT library APPML/clAmdFft from AMD
 
 .. moduleauthor:: Gregor Thalhammer
@@ -62,147 +62,76 @@ cdef class GpyFFT(object):
     def get_version(self):
         """returns the version of the underlying AMD FFT library
 
-    Returns:
-        A tuple with the major, minor, and patch level of the AMD
-        FFT library.
+        Parameters
+        ----------
+            None
 
-        example:
-        (1L, 8L, 214L)
+        Returns
+        -------
+            out : tuple
+                the major, minor, and patch level of the AMD FFT library
 
-    Raises:
-        GpyFFT_Error: An error occurred accessing the clAmdFftGetVersion
-        function
+        Raises
+        ------
+        GpyFFT_Error
+                An error occurred accessing the clAmdFftGetVersion function
+                
+        Notes
+        -----
+            The underlying AMD FFT call is 'clAmdFftCreateDefaultPlan'
         """
-    
+
         cdef cl_uint major, minor, patch
         errcheck(clAmdFftGetVersion(&major, &minor, &patch))
         return (major, minor, patch)
     
     def create_plan(self, context, tuple shape):
-        """creates an FFT plan based on the dimensionality of the input data
-        
-    Args:
-       context (object) : a PyOpenCL Context object 
-       shape (tuple)    : the dimensionality of the input data
-       
-    Kwargs:
-       None
-
-    Returns:
-       Plan (object)    : a gpyfft.Plan object
-
-    Raises:
-        None
-        """
-    
-        return Plan(context, shape, self)
-
-    def fn_with_sphinxy_docstring(name, state=None):
-        """This function does something.
-
-        :param name: The name to use.
-        :type name: str.
-        :param state: Current state to be in.
-        :type state: bool.
-        :returns:  int -- the return code.
-        :raises: AttributeError, KeyError
-
-        """
-        return 0
-
-    def foo1(var1, var2, long_var_name='hi') :
-        r"""A one-line summary that does not use variable names or the
-        function name.
-
-        (This is a numpy style doc string)
-        
-        Several sentences providing an extended description. Refer to
-        variables using back-ticks, e.g. `var`.
+        r"""creates an FFT Plan object based on the requested dimensionality
 
         Parameters
         ----------
-        var1 : array_like
-            Array_like means all those objects -- lists, nested lists, etc. --
-            that can be converted to an array.  We can also refer to
-            variables like `var1`.
-        var2 : int
-            The type above can either refer to an actual Python type
-            (e.g. ``int``), or describe the type of the variable in more
-            detail, e.g. ``(N,) ndarray`` or ``array_like``.
-        Long_variable_name : {'hi', 'ho'}, optional
-            Choices in brackets, default first when optional.
+        context : pypencl.Context
+                 http://documen.tician.de/pyopencl/runtime.html#pyopencl.Context
+
+        shape : tuple
+            containing from one to three integers, specifying the
+            length of each requested dimension of the FFT
 
         Returns
         -------
-        describe : type
-            Explanation
-        output : type
-            Explanation
-        tuple : type
-            Explanation
-        items : type
-            even more explaining
-
-        Other Parameters
-        ----------------
-        only_seldom_used_keywords : type
-            Explanation
-        common_parameters_listed_above : type
-            Explanation
+        out : gpyfft.Plan object
+            The generated gpyfft.Plan
 
         Raises
         ------
-        BadException
-            Because you shouldn't have done that.
-
-        See Also
-        --------
-        otherfunc : relationship (optional)
-        newfunc : Relationship (optional), which could be fairly long, in which
-                  case the line wraps here.
-        thirdfunc, fourthfunc, fifthfunc
-
-        Notes
-        -----
-        Notes about the implementation algorithm (if needed).
-
-        This can have multiple paragraphs.
-
-        You may include some math:
-
-
-        References
-        ----------
-        Cite the relevant literature, e.g. [1]_.  You may also cite these
-        references in the notes section above.
-
-        .. [1] O. McNoleg, "The integration of GIS, remote sensing,
-           expert systems and adaptive co-kriging for environmental habitat
-           modelling of the Highland Haggis using object-oriented, fuzzy-logic
-           and neural-network techniques," Computers & Geosciences, vol. 22,
-           pp. 585-588, 1996.
-
-        Examples
-        --------
-        These are written in doctest format, and should illustrate how to
-        use the function.
-
-        >>> a=[1,2,3]
-        >>> print [x + 3 for x in a]
-        [4, 5, 6]
-        >>> print "a\n\nb"
-        a
-        b
-
+        None
         """
 
-        pass      
-        
+        return Plan(context, shape, self)
+
 #@cython.internal
 cdef class Plan(object):
-    """The Plan object gathers information about the desired transforms and
-    about the underlying OpenCL implementation and performs the bake operation
-    and generates OpenCL kernels"""
+    """A plan is the collection of (almost) all parameters needed to specify 
+    an FFT computation. This includes:
+
+    * What pyopencl context executes the transform?
+    * Is this a 1D, 2D or 3D transform?
+    * What are the lengths or extents of the data in each dimension?
+    * How many datasets are being transformed?
+    * What is the data precision?
+    * Should a scaling factor be applied to the transformed data?
+    * Does the output transformed data replace the original input data in the same buffer (or buffers), or is the output data written to a different buffer (or buffers).
+    * How is the input data stored in its data buffers?
+    * How is the output data stored in its data buffers?
+
+    The plan does not include:
+
+    * The pyopencl handles to the input and output data buffers.
+    * The pyopencl handle to a temporary scratch buffer (if needed).
+    * Whether to execute a forward or reverse transform.
+
+    These are specified later, when the plan is executed.
+    """
 
     cdef clAmdFftPlanHandle plan
     cdef object lib
@@ -210,26 +139,37 @@ cdef class Plan(object):
     def __dealloc__(self):
         if self.plan:
             errcheck(clAmdFftDestroyPlan(&self.plan))
-    
+
     def __cinit__(self):
         self.plan = 0
 
     def __init__(self, context, tuple shape, lib):
-        """Instantiates a Plan object.
-        
+        """Instantiates a Plan object
+
         Plan objects are created internally by gpyfft; normally
         a user does not create these objects
-        
-    Args:
-       context (object) : a PyOpenCL Context object 
-       shape (tuple)    : the dimensionality of the input data
-       lib (not sure)   : not sure what this is
-       
-    Kwargs:
-       None
 
-    Raises:
-        None
+        Parameters
+        ----------
+        contex : pyopencl.Context
+               http://documen.tician.de/pyopencl/runtime.html#pyopencl.Context
+
+        shape  : tuple
+               the dimensionality of the transform
+
+        lib    :  no idea
+               this is a thing that does lib things
+
+        Raises
+        ------
+            ValueError
+                when the shape isn't a tuple of length 1, 2 or 3
+            TypeError
+                because the context argument isn't a valid pyopencl.Context
+
+        Notes
+        -----
+            The underlying AMD FFT call is 'clAmdFftCreateDefaultPlan'
         """
     
         self.lib = lib
@@ -287,16 +227,26 @@ cdef class Plan(object):
 
     cdef clAmdFftDim get_dim(self):
         """retrieve the dimensionality of FFTs to be transformed in the plan
-       
-    Args:
-       None       
-    Kwargs:
-       None
 
-    Raises:
-       gpyfft.GpyFFT_Error  : clAmdFftGetPlanDim returned an error
+        Parameters
+        ----------
+            None
+
+        Returns
+        -------
+            out : tuple
+                the major, minor, and patch level of the AMD FFT library
+
+        Raises
+        ------
+        GpyFFT_Error
+                An error occurred accessing the clAmdFftGetPlanDim function
+                
+        Notes
+        -----
+            The underlying AMD FFT call is 'clAmdFftGetPlanDim'
         """
-    
+
         cdef clAmdFftDim dim
         cdef cl_uint size
         errcheck(clAmdFftGetPlanDim(self.plan, &dim, &size))
@@ -351,7 +301,7 @@ cdef class Plan(object):
     property strides_out:
         """the distance between consecutive elements for output buffers 
         in a dimension"""        
-        def __get__(self):
+        def __get__(self):            
             cdef clAmdFftDim dim = self.get_dim()
             cdef size_t strides[3]
             errcheck(clAmdFftGetPlanOutStride(self.plan, dim, strides))
@@ -427,31 +377,36 @@ cdef class Plan(object):
             else:
                 transposed = CLFFT_NOTRANSPOSE
             errcheck(clAmdFftSetPlanTransposeResult(self.plan, transposed))
-                
 
     def bake(self, queues):
         """Prepare the plan for execution
-        
-    After all plan parameters are set, the client has the option of "baking" the plan, which tells the
-    runtime no more changes to the plan's parameters are expected, and the OpenCL kernels are
-    to be compiled. This optional function allows the client application to perform this function when
-    the application is being initialized instead of on the first execution. At this point, the clAmdFft
-    runtime applies all implemented optimizations, possibly including running kernel experiments on
-    the devices in the plan context.       
-        
-    Args:
-       queues (not sure) : not sure
-       
-    Kwargs:
-       None
 
-    Returns:
-       None
-       
-    Raises:
-       gpyfft.GpyFFT_Error  : clAmdFftBakePlan returned an error
+        After all plan parameters are set, the client has the option of "baking" the plan, which tells the
+        runtime no more changes to the plan's parameters are expected, and the OpenCL kernels are
+        to be compiled. This optional function allows the client application to perform this function when
+        the application is being initialized instead of on the first execution. At this point, the clAmdFft
+        runtime applies all implemented optimizations, possibly including running kernel experiments on
+        the devices in the plan context.
+
+        Parameters
+        ----------
+            queues : list
+                   this is a list of things
+
+        Returns
+        -------
+            None
+
+        Raises
+        ------
+            GpyFFT_Error
+                An error occurred accessing the clAmdFftBakePlan function
+
+        Notes
+        -----
+            The underlying AMD FFT call is 'clAmdFftBakePlan'
         """
-    
+
         if isinstance(queues, cl.CommandQueue):
             queues = (queues,)
         cdef int n_queues = len(queues)
@@ -476,27 +431,46 @@ cdef class Plan(object):
         """Enqueue an FFT transform operation, and either return immediately, or block 
         waiting for events.
 
-    This transform API is specific to the interleaved complex format, taking an input buffer with real
-    and imaginary components paired together, and outputting the results into an output buffer in the
-    same format.
-    
-    Args:
-       queues (not sure)        : not sure
-       in_buffers (?)           : not sure
-       
-    Kwargs:       
-       out_buffers (?)          : not sure
-       direction_forward (bool) : not sure
-       wait_for_events (bool)   : not sure
-       temp_buffer (?)          : not sure
-      
-    Returns:
-       tuple of event objects?
-       
-    Raises:
-       gpyfft.GpyFFT_Error  : clAmdFftEnqueueTransform returned an error
+        This transform API is specific to the interleaved complex format, taking an input buffer with real
+        and imaginary components paired together, and outputting the results into an output buffer in the
+        same format.
+
+        Parameters
+        ----------
+        queues     : list
+                   of things
+
+        in_buffers : array-like
+                   array-like input data
+
+        Other Parameters
+        ----------------
+        out_buffers : array-like, optional
+                    if the plan is out-of-place, then we have out buffers
+
+        direction_forward : bool, optional
+                          this works like it sounds like it should
+
+        wait_for_events : list, optional
+                        I am not sure how this interface works
+
+        temp_buffer : buffer, optional
+                    I am not sure how this works
+
+        Returns
+        -------
+            None
+
+        Raises
+        ------
+            GpyFFT_Error
+                An error occurred accessing the clAmdFftEnqueueTransform function
+
+        Notes
+        -----
+            The underlying AMD FFT call is 'clAmdFftEnqueueTransform'
         """
-                         
+
         cdef int i
 
         cdef clAmdFftDirection direction
@@ -570,14 +544,6 @@ cdef class Plan(object):
             
         
         
-
-        
-        
-                
-
-
-
-
 
 #gpyfft = GpyFFT()
 
