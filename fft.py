@@ -3,6 +3,11 @@ GFFT = gpyfft.GpyFFT()
 import time
 import numpy as np
 
+# TODO:
+# real to complex: out-of-place
+# planar, interleaved arrays
+# precision: single, double
+
 class FFT(object):
     def __init__(self, context, queue, input_arrays, output_arrays=None, axes = None, fast_math = False):
         self.context = context
@@ -51,9 +56,9 @@ class FFT(object):
             self.temp_buffer = None
 
         self.plan = plan
-        self.data = in_array
-        self.result = out_array
-        
+        self.data = in_array #TODO: planar arrays
+        self.result = out_array #TODO: planar arrays
+
 
     def calculate_transform_strides(self,
                                     axes,
@@ -91,6 +96,7 @@ class FFT(object):
         return (tuple(t_strides), t_distance, batchsize, tuple(t_shape))
 
     def enqueue(self, forward = True):
+        """enqueue transform"""
         if self.result is not None:
             events = self.plan.enqueue_transform((self.queue,), (self.data.data,), (self.result.data),
                                         direction_forward = forward, temp_buffer = self.temp_buffer)
