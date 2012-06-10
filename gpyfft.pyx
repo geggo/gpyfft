@@ -1,7 +1,7 @@
 # -*- coding: latin-1 -*-
 """
 .. module:: gpyfft
-   :platform: Windows
+   :platform: Windows, Linux
    :synopsis: A Python wrapper for the OpenCL FFT library APPML/clAmdFft from AMD
 
 .. moduleauthor:: Gregor Thalhammer
@@ -23,7 +23,7 @@ error_dict = {
     CLFFT_FILE_NOT_FOUND: 'Tried to open an existing file on the host system, but failed.',
     CLFFT_FILE_CREATE_FAILURE: 'Tried to create a file on the host system, but failed.',
     CLFFT_VERSION_MISMATCH: 'Version conflict between client and library.',
-    CLFFT_INVALID_PLAN: 'Requested plan could not be found.',
+    CLFFT_INVALID_PLAN: 'Invalid plan.',
     CLFFT_DEVICE_NO_DOUBLE: 'Double precision not supported on this device.',
     }
 
@@ -86,25 +86,28 @@ cdef class GpyFFT(object):
         return (major, minor, patch)
     
     def create_plan(self, context, tuple shape):
-        r"""creates an FFT Plan object based on the requested dimensionality
+        """creates an FFT Plan object based on the requested dimensionality
 
         Parameters
         ----------
-        context : pypencl.Context
-                 http://documen.tician.de/pyopencl/runtime.html#pyopencl.Context
+        context : `pypencl.Context`
 
-        shape : tuple
+        shape : tuple of int
             containing from one to three integers, specifying the
             length of each requested dimension of the FFT
 
         Returns
         -------
-        out : gpyfft.Plan object
-            The generated gpyfft.Plan
+        plan : `Plan`
+            The generated gpyfft.Plan.
 
         Raises
         ------
-        None
+            ValueError
+                when `shape` isn't a tuple of length 1, 2 or 3
+            TypeError
+                when the context argument is not a `pyopencl.Context`
+
         """
 
         return Plan(context, shape, self)
@@ -226,34 +229,13 @@ cdef class Plan(object):
             errcheck(clAmdFftSetPlanBatchSize(self.plan, nbatch))
 
     cdef clAmdFftDim get_dim(self):
-        """retrieve the dimensionality of FFTs to be transformed in the plan
-
-        Parameters
-        ----------
-            None
-
-        Returns
-        -------
-            out : tuple
-                the major, minor, and patch level of the AMD FFT library
-
-        Raises
-        ------
-        GpyFFT_Error
-                An error occurred accessing the clAmdFftGetPlanDim function
-                
-        Notes
-        -----
-            The underlying AMD FFT call is 'clAmdFftGetPlanDim'
-        """
-
         cdef clAmdFftDim dim
         cdef cl_uint size
         errcheck(clAmdFftGetPlanDim(self.plan, &dim, &size))
         return dim
             
     property shape:
-        """the length of each dimension of the FFT"""    
+        """the length of each dimension of the FFT"""
         def __get__(self):
             cdef clAmdFftDim dim = self.get_dim()
             cdef size_t sizes[3]
@@ -276,7 +258,7 @@ cdef class Plan(object):
             errcheck(clAmdFftSetPlanLength(self.plan, dim, &sizes[0]))
 
     property strides_in:
-        """the distance between consecutive elements for input buffers 
+        """the distance between consecutive elements for input buffers
         in a dimension"""    
         def __get__(self):
             cdef clAmdFftDim dim = self.get_dim()
@@ -357,15 +339,20 @@ cdef class Plan(object):
             errcheck(clAmdFftSetResultLocation(self.plan, placeness))
 
     property temp_array_size:
-        """the buffer size (in bytes), which may be needed internally for an
-        intermediate buffer"""    
+        """Buffer size (in bytes), which may be needed internally for
+        an intermediate buffer. Requires that transform plan is baked
+        before."""    
         def __get__(self):
             cdef size_t buffersize
             errcheck(clAmdFftGetTmpBufSize(self.plan, &buffersize))
             return buffersize
 
     property transpose_result:
-        """the final transpose setting of a multi-dimensional FFT"""    
+        """the final transpose setting of a multi-dimensional FFT
+        
+        True: transpose the final result (default)
+        False: skip final transpose
+        """    
         def __get__(self):
             cdef clAmdFftResultTransposed transposed
             errcheck(clAmdFftGetPlanTransposeResult(self.plan, &transposed))
@@ -379,19 +366,18 @@ cdef class Plan(object):
             errcheck(clAmdFftSetPlanTransposeResult(self.plan, transposed))
 
     def bake(self, queues):
-        """Prepare the plan for execution
+        """Prepare the plan for execution.
 
-        After all plan parameters are set, the client has the option of "baking" the plan, which tells the
-        runtime no more changes to the plan's parameters are expected, and the OpenCL kernels are
-        to be compiled. This optional function allows the client application to perform this function when
-        the application is being initialized instead of on the first execution. At this point, the clAmdFft
-        runtime applies all implemented optimizations, possibly including running kernel experiments on
-        the devices in the plan context.
+        Prepares and compiles OpenCL kernels internally used to
+        perform the transform. At this point, the clAmdFft runtime
+        applies all implemented optimizations, possibly including
+        running kernel experiments on the devices in the plan
+        context. This can take a long time to execute. If not called,
+        this is performed when the plan is execute for the first time.
 
         Parameters
         ----------
-            queues : list
-                   this is a list of things
+            queues : `pyopencl.CommandQueue` or list of `pyopencl.CommandQueue`
 
         Returns
         -------
@@ -399,7 +385,7 @@ cdef class Plan(object):
 
         Raises
         ------
-            GpyFFT_Error
+            `GpyFFT_Error`
                 An error occurred accessing the clAmdFftBakePlan function
 
         Notes
@@ -428,42 +414,39 @@ cdef class Plan(object):
                          wait_for_events = None, 
                          temp_buffer = None,
                          ):
-        """Enqueue an FFT transform operation, and either return immediately, or block 
-        waiting for events.
-
-        This transform API is specific to the interleaved complex format, taking an input buffer with real
-        and imaginary components paired together, and outputting the results into an output buffer in the
-        same format.
+        """Enqueue an FFT transform operation, and return immediately.
 
         Parameters
         ----------
-        queues     : list
-                   of things
+        queues : pyopencl.CommandQueue or iterable of pyopencl.CommandQueue
 
-        in_buffers : array-like
-                   array-like input data
+        in_buffers : pyopencl.Buffer or iterable (1 or 2 items) of pyopencl.Buffer
+
+        out_buffers : pyopencl.Buffer or iterable (1 or 2 items) of pyopencl.Buffer, optional
+            can be None for inplace transforms
 
         Other Parameters
         ----------------
-        out_buffers : array-like, optional
-                    if the plan is out-of-place, then we have out buffers
 
         direction_forward : bool, optional
-                          this works like it sounds like it should
+            Perform forward transform (default True).
 
-        wait_for_events : list, optional
-                        I am not sure how this interface works
+        wait_for_events : iterable of pyopencl.Event, optional
+            Ensures that all events in this list have finished
+            execution before transform is performed.
 
-        temp_buffer : buffer, optional
-                    I am not sure how this works
+        temp_buffer : pyopencl.Buffer, optional
+            For intermediate results a temporary buffer can be
+            provided. The size (in bytes) of this buffer is given by
+            the `temp_array_size` property.
 
         Returns
         -------
-            None
+            tuple of `pyopencl.Event`, one event for each command queue in `queues`
 
         Raises
         ------
-            GpyFFT_Error
+            `GpyFFT_Error`
                 An error occurred accessing the clAmdFftEnqueueTransform function
 
         Notes
