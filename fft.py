@@ -1,5 +1,5 @@
 import gpyfft
-GFFT = gpyfft.GpyFFT()
+GFFT = gpyfft.GpyFFT(debug=False)
 import time
 import numpy as np
 
@@ -46,6 +46,7 @@ class FFT(object):
             print 'distance_in              ', t_distance_in
             print 'batchsize                ', t_batchsize_in
             print 't_stride_out             ', t_strides_out
+            print 'inplace                  ', t_inplace
 
         plan.bake(self.queue)
         temp_size = plan.temp_array_size
@@ -127,7 +128,7 @@ if n_run > 1:
     nd_dataC = np.zeros((4,1024, 1024), dtype = np.complex64) #for benchmark
     #nd_dataC = np.zeros((128,128,128), dtype = np.complex64) #for benchmark
 else:
-    nd_dataC = np.ones((1024, 1024), dtype = np.complex64) #set n_run to 1
+    nd_dataC = np.ones((4,1024, 1024), dtype = np.complex64) #set n_run to 1
 
 #nd_dataC = np.array([[1,2,3,4], [5,6,7,8]], dtype = np.complex64) #small array
 
@@ -141,46 +142,55 @@ resultF = cla.to_device(queue, np.asfortranarray(nd_result))
 result = resultF
 
 
-axes_list = [(0,), (1,), (0,1)] #is (1,0) the same?
-axes_list = [(1,0), (0,1), (1,2), (2,1)]
+#axes_list = [(0,), (1,), (0,1)] #is (1,0) the same?
+#axes_list = [(1,0), (0,1), (1,2), (2,1)]
+axes_list = [(1,2), (2,1)]
 #axes_list = [(1,0), (0,1), (1,2), (2,1), (0,1,2), (2,1,0)]
 
-print 'out of place transforms', dataC.shape
-print 'axes         in out'
-for axes in axes_list:
-    for data in (dataC, dataF):
-        for result in (resultC, resultF):
-    
-            transform = FFT(context, queue, (data,), (result,), axes = axes)
-            tic = time.clock()
-            for i in range(n_run):
-                events = transform.enqueue()
-            for e in events:
-                e.wait()
-            toc = time.clock()
-            t_ms = 1e3*(toc-tic)/n_run
-            gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
-            print '%-10s %3s %3s %5.2fms %4d Gflops'%(
-                axes,
-                'C' if data.flags.c_contiguous else 'F',  
-                'C' if result.flags.c_contiguous else 'F',  
-                t_ms, gflops
-                )
-            assert_array_almost_equal(result.get(), npfftn(data.get(), axes = axes))
+if True:
+    print 'out of place transforms', dataC.shape
+    print 'axes         in out'
+    for axes in axes_list:
+        for data in (dataC, dataF):
+            for result in (resultC, resultF):
+                try:
 
-print
-print 'in place transforms', nd_dataC.shape
+                    transform = FFT(context, queue, (data,), (result,), axes = axes)
+                    #transform.plan.transpose_result = True #not implemented
+                    tic = time.clock()
+                    for i in range(n_run):
+                        events = transform.enqueue()
+                        #events = transform.enqueue(False)
+                    for e in events:
+                        e.wait()
+                    toc = time.clock()
+                    t_ms = 1e3*(toc-tic)/n_run
+                    gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
+                    print '%-10s %3s %3s %5.2fms %4d Gflops'%(
+                        axes,
+                        'C' if data.flags.c_contiguous else 'F',  
+                        'C' if result.flags.c_contiguous else 'F',  
+                        t_ms, gflops
+                        )
+                    assert_array_almost_equal(result.get(), npfftn(data.get(), axes = axes))
+                except gpyfft.GpyFFT_Error, e:
+                    print e
+                except AssertionError, e:
+                    print e
+
+    print
+    print 'in place transforms', nd_dataC.shape
 
 for axes in axes_list:
     for nd_data in (nd_dataC, nd_dataF):
         data = cla.to_device(queue, nd_data)
         transform = FFT(context, queue, (data,), axes = axes)
+        #transform.plan.transpose_result = True #not implemented
         tic = time.clock()
-        for i in range(n_run//2):
+        for i in range(n_run): #inplace transform fails for n_run > 1
             events = transform.enqueue()
         for e in events:
                 e.wait()
-           
         toc = time.clock()
         t_ms = 1e3*(toc-tic)/n_run
         gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
@@ -189,7 +199,7 @@ for axes in axes_list:
             'C' if data.flags.c_contiguous else 'F',
             t_ms, gflops
             )
-        assert_array_almost_equal(data.get(), npfftn(nd_data, axes = axes))
+        assert_array_almost_equal(data.get(queue=queue), npfftn(nd_data, axes = axes))
 
 
 
