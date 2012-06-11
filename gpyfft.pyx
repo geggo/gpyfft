@@ -51,9 +51,11 @@ cdef inline bint errcheck(clAmdFftStatus result) except True:
 #TODO: need to initialize (and destroy) at module level
 cdef class GpyFFT(object):
     """The GpyFFT object is the primary interface to the AMD FFT library"""
-    def __cinit__(self): #TODO: add debug flag
+    def __cinit__(self, debug = False):
         cdef clAmdFftSetupData setup_data
         errcheck(clAmdFftInitSetupData(&setup_data))
+        if debug:
+            setup_data.debugFlags |= CLFFT_DUMP_PROGRAMS
         errcheck(clAmdFftSetup(&setup_data))
 
     def __dealloc__(self):

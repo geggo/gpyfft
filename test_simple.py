@@ -3,7 +3,7 @@ import pyopencl.array as cla
 import numpy as np
 import gpyfft
 
-G = gpyfft.GpyFFT()
+G = gpyfft.GpyFFT(debug=True)
 
 print "clAmdFft Version: %d.%d.%d"%(G.get_version())
 

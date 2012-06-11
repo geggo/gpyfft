@@ -8,6 +8,8 @@ cdef extern from "clAmdFft.h":
     ctypedef void* cl_event
     ctypedef void* cl_mem
 
+    enum: 
+        CLFFT_DUMP_PROGRAMS ##define constant 
 
     ctypedef enum clAmdFftStatus:
         CLFFT_INVALID_GLOBAL_WORK_SIZE
