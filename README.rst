@@ -64,19 +64,20 @@ missing features
 Requirements
 ------------
 
--  python
--  pyopencl (git version newer than 4 Jun 2012)
--  cython
--  APPML clAmdFft 1.8
--  AMD APP SDK
+- python
+- pyopencl (git version newer than 4 Jun 2012)
+- distribute
+- cython
+- APPML clAmdFft 1.8
+- AMD APP SDK
 
-Installation
-------------
+Building and Installation
+-------------------------
 
 1) Install the AMD library:
 
    - install clAmdFft
-   - add clAmdFft/binXX to PATH, or copy clAmdFft.Runtime.dll to
+   - add clAmdFft/binXX to PATH (or copy clAmdFft.Runtime.dll to
      package directory
    - edit setup.py to point to clAmdFft and AMD APP directories
 
@@ -84,9 +85,14 @@ Then, either:
 
 2) python setup.py install
 
-Or:
+or for developing
 
-3) inplace build: python setup.py build\_ext --inplace
+3) python setup.py develop 
+
+   python setup.py build\_ext --inplace
+   (rerun last command whenever cython extension has changed)
+
+   python setup.py develop -u #for uninstalling development version
 
 License:
 --------
