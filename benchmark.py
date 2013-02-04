@@ -4,6 +4,8 @@ import pyopencl.array as cla
 import numpy as np
 import gpyfft
 
+#NOTE: better benchmark contained in high level interface gpyfft/fft.py
+
 G = gpyfft.GpyFFT()
 
 print "clAmdFft Version: %d.%d.%d"%(G.get_version())
@@ -11,7 +13,7 @@ print "clAmdFft Version: %d.%d.%d"%(G.get_version())
 context = cl.create_some_context()
 queue = cl.CommandQueue(context)
 
-nd_data = np.ones((1024, 1024), dtype = np.complex64)
+nd_data = np.ones((512, 512), dtype = np.complex64)
 cl_data = cla.to_device(queue, nd_data)
 cl_data_transformed = cla.empty_like(cl_data)
 
@@ -19,7 +21,7 @@ print 'data shape:', cl_data.shape
 
 plan = G.create_plan(context, cl_data.shape)
 
-plan.inplace = False
+plan.inplace = True #False
 plan.precision = 1
 
 print 'plan.inplace:', plan.inplace
