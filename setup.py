@@ -2,19 +2,15 @@ import os.path, platform
 from setuptools import setup, Extension
 from Cython.Distutils import build_ext
 
-AMDFFT = r'C:\Program Files (x86)\AMD\clAmdFft'
-AMDAPP = r'C:\Program Files (x86)\AMD APP'
+CLFFT_DIR = r'/Users/gregor/Devel/clFFT'
 
-bits,foo = platform.architecture()
-if bits == '64bit':
-    AMDFFTLIBDIR = os.path.join(AMDFFT, 'lib64')
-else:
-    AMDFFTLIBDIR = os.path.join(AMDFFT, 'lib32')
+import Cython.Compiler.Options
+Cython.Compiler.Options.generate_cleanup_code = 2
 
 setup(
     name = 'Gpyfft',
-    version = '0.1',
-    description = 'A Python wrapper for the OpenCL FFT library APPML/clAmdFft from AMD',
+    version = '0.2',
+    description = 'A Python wrapper for the OpenCL FFT library clFFT by AMD',
     url = r"https://github.com/geggo/gpyfft",
     maintainer='Gregor Thalhammer',
     maintainer_email = 'gregor.thalhammer@gmail.com',
@@ -22,15 +18,14 @@ setup(
     cmdclass = {'build_ext': build_ext},
     packages = ['gpyfft'],
     ext_modules = [Extension("gpyfft.gpyfftlib",
-                             ["gpyfft\gpyfftlib.pyx"],
+                             [os.path.join('gpyfft', 'gpyfftlib.pyx')],
                              include_dirs = [".",
-                                             os.path.join(AMDFFT,'include'),
-                                             os.path.join(AMDAPP,'include'),
+                                             os.path.join(CLFFT_DIR,'src', 'include'),
                                              ],
                              extra_compile_args = [],
                              extra_link_args = [],
-                             libraries = ['clAmdFft.Runtime'],
-                             library_dirs = [os.path.join(AMDFFTLIBDIR, 'import')]
+                             libraries = ['clFFT'],
+                             library_dirs = [os.path.join(CLFFT_DIR, 'src', 'library')]
                              )
                    ],
     )

@@ -1,20 +1,16 @@
 gpyfft
 ======
 
-A Python wrapper for the OpenCL FFT library APPML/clAmdFft from AMD
+A Python wrapper for the OpenCL FFT library clFFT from AMD
 
 Introduction
 ------------
 
 AMD has created a nice FFT library for use with their OpenCL
-implementation called `AMD Accelerated Parallel Processing Math
-Libraries
+implementation called `clFFT
 <http://developer.amd.com/libraries/appmathlibs/Pages/default.aspx>`_
-This C library is available as precompiled binaries for Windows and
-Linux platforms. It is optimized for AMD GPUs. (Note: This library is
-not limited to work only with hardware from AMD, but according to this
-`forum entry <http://devgurus.amd.com/thread/159149>`_ it currently
-yields wrong results on NVidia GPUs.)
+which has been released as open source (Apache 2.0 license)
+
 
 This python wrapper is designed to tightly integrate with pyopencl. It
 consists of a low-level cython based wrapper with an interface similar
@@ -68,18 +64,15 @@ Requirements
 - pyopencl (git version newer than 4 Jun 2012)
 - distribute
 - cython
-- APPML clAmdFft 1.8
-- AMD APP SDK
+- AMD clFFT
 
 Building and Installation
 -------------------------
 
-1) Install the AMD library:
+1) Build and install the AMD clFFT library:
 
-   - install clAmdFft
-   - add clAmdFft/binXX to PATH (or copy clAmdFft.Runtime.dll to
-     package directory
-   - edit setup.py to point to clAmdFft and AMD APP directories
+   - install clFFT
+   - edit setup.py to point to clFFT directory
 
 Then, either:
 

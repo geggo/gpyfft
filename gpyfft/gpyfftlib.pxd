@@ -1,17 +1,35 @@
-cdef extern from "clAmdFft.h":
+cdef extern from "clFFT.h":
     ctypedef int cl_int
     ctypedef unsigned int cl_uint
     ctypedef unsigned long int cl_ulong
     ctypedef float cl_float
+
     ctypedef void* cl_context
     ctypedef void* cl_command_queue
     ctypedef void* cl_event
     ctypedef void* cl_mem
 
-    enum: 
-        CLFFT_DUMP_PROGRAMS ##define constant 
+    # cdef struct _cl_context:
+    #     pass
+    # ctypedef _cl_context *cl_context
 
-    ctypedef enum clAmdFftStatus:
+    # cdef struct _cl_command_queue:
+    #     pass
+    # ctypedef _cl_command_queue *cl_command_queue
+
+    # cdef struct _cl_event:
+    #     pass
+    # ctypedef _cl_event *cl_event
+
+    # cdef struct _cl_mem:
+    #     pass
+    # ctypedef _cl_mem *cl_mem
+
+
+    enum:
+        CLFFT_DUMP_PROGRAMS ##define constant
+
+    cdef enum clfftStatus_:
         CLFFT_INVALID_GLOBAL_WORK_SIZE
         CLFFT_INVALID_MIP_LEVEL
         CLFFT_INVALID_BUFFER_SIZE
@@ -59,109 +77,124 @@ cdef extern from "clAmdFft.h":
         CLFFT_DEVICE_NOT_AVAILABLE
         CLFFT_DEVICE_NOT_FOUND
         CLFFT_SUCCESS
-        # status codes for clAmdFft
-        CLFFT_BUGCHECK	#Bugcheck
-        CLFFT_NOTIMPLEMENTED #Functionality is not implemented yet.
-        CLFFT_TRANSPOSED_NOTIMPLEMENTED #Transposed functionality is not implemented for this transformation.
-        CLFFT_FILE_NOT_FOUND #Tried to open an existing file on the host system, but failed.
-        CLFFT_FILE_CREATE_FAILURE #Tried to create a file on the host system, but failed.
-        CLFFT_VERSION_MISMATCH #Version conflict between client and library.
-        CLFFT_INVALID_PLAN #Requested plan could not be found.
-        CLFFT_DEVICE_NO_DOUBLE #Double precision not supported on this device.
-        CLFFT_ENDSTATUS
-        
-    ctypedef enum clAmdFftDim:
+        CLFFT_BUGCHECK
+        CLFFT_NOTIMPLEMENTED
+        CLFFT_TRANSPOSED_NOTIMPLEMENTED
+        CLFFT_FILE_NOT_FOUND
+        CLFFT_FILE_CREATE_FAILURE
+        CLFFT_VERSION_MISMATCH
+        CLFFT_INVALID_PLAN
+        CLFFT_DEVICE_NO_DOUBLE
+
+    ctypedef clfftStatus_ clfftStatus
+
+    cdef enum clfftDim_:
         CLFFT_1D
         CLFFT_2D
         CLFFT_3D
-        ENDDIMENSION
 
-    ctypedef enum clAmdFftLayout:
+    ctypedef clfftDim_ clfftDim
+
+    cdef enum clfftLayout_:
         CLFFT_COMPLEX_INTERLEAVED
         CLFFT_COMPLEX_PLANAR
         CLFFT_HERMITIAN_INTERLEAVED
         CLFFT_HERMITIAN_PLANAR
         CLFFT_REAL
-        ENDLAYOUT
-        
-    ctypedef enum clAmdFftPrecision:
+
+    ctypedef clfftLayout_ clfftLayout
+
+    cdef enum clfftPrecision_:
         CLFFT_SINGLE
         CLFFT_DOUBLE
         CLFFT_SINGLE_FAST
         CLFFT_DOUBLE_FAST
-        ENDPRECISION
-        
-    ctypedef enum clAmdFftDirection:
+
+    ctypedef clfftPrecision_ clfftPrecision
+
+    cdef enum clfftDirection_:
         CLFFT_FORWARD
         CLFFT_BACKWARD
         CLFFT_MINUS
         CLFFT_PLUS
-        ENDDIRECTION
 
-    ctypedef enum clAmdFftResultLocation:
+    ctypedef clfftDirection_ clfftDirection
+
+    cdef enum clfftResultLocation_:
         CLFFT_INPLACE
         CLFFT_OUTOFPLACE
-        ENDPLACE
 
-    ctypedef enum clAmdFftResultTransposed:
+    ctypedef clfftResultLocation_ clfftResultLocation
+
+    cdef enum clfftResultTransposed_:
         CLFFT_NOTRANSPOSE
         CLFFT_TRANSPOSED
-        ENDTRANSPOSED
-        
-    cdef enum:
-        CLFFT_DUMP_PROGRAMS
 
-    ctypedef struct clAmdFftSetupData:
+    ctypedef clfftResultTransposed_ clfftResultTransposed
+
+    cdef struct clfftSetupData_:
         cl_uint major
         cl_uint minor
         cl_uint patch
         cl_ulong debugFlags
 
-    ctypedef size_t clAmdFftPlanHandle
+    ctypedef clfftSetupData_ clfftSetupData
 
-    clAmdFftStatus clAmdFftInitSetupData( clAmdFftSetupData* setupData )
-    clAmdFftStatus clAmdFftSetup( clAmdFftSetupData* setupData )
-    clAmdFftStatus clAmdFftTeardown( )
-    clAmdFftStatus clAmdFftGetVersion( cl_uint* major, cl_uint* minor, cl_uint* patch )
-    clAmdFftStatus clAmdFftCreateDefaultPlan( clAmdFftPlanHandle* plHandle, cl_context context, clAmdFftDim dim, size_t* clLengths )
-    clAmdFftStatus clAmdFftCopyPlan( clAmdFftPlanHandle* out_plHandle, cl_context new_context, clAmdFftPlanHandle in_plHandle )
-    clAmdFftStatus clAmdFftBakePlan( clAmdFftPlanHandle plHandle, cl_uint numQueues, cl_command_queue* commQueueFFT,
-                                     void (*pfn_notify)(clAmdFftPlanHandle plHandle, void *user_data), void* user_data )
-    clAmdFftStatus clAmdFftDestroyPlan( clAmdFftPlanHandle* plHandle )
-    clAmdFftStatus clAmdFftGetPlanContext( clAmdFftPlanHandle plHandle, cl_context* context )
-    clAmdFftStatus clAmdFftGetPlanPrecision( clAmdFftPlanHandle plHandle, clAmdFftPrecision* precision )
-    clAmdFftStatus clAmdFftSetPlanPrecision( clAmdFftPlanHandle plHandle, clAmdFftPrecision precision )
-    clAmdFftStatus clAmdFftGetPlanScale( clAmdFftPlanHandle plHandle, clAmdFftDirection dir, cl_float* scale )
-    clAmdFftStatus clAmdFftSetPlanScale( clAmdFftPlanHandle plHandle, clAmdFftDirection dir, cl_float scale )
-    clAmdFftStatus clAmdFftGetPlanBatchSize( clAmdFftPlanHandle plHandle, size_t* batchSize )
-    clAmdFftStatus clAmdFftSetPlanBatchSize( clAmdFftPlanHandle plHandle, size_t batchSize )
-    clAmdFftStatus clAmdFftGetPlanDim( clAmdFftPlanHandle plHandle, clAmdFftDim* dim, cl_uint* size )
-    clAmdFftStatus clAmdFftSetPlanDim( clAmdFftPlanHandle plHandle, clAmdFftDim dim )
-    clAmdFftStatus clAmdFftGetPlanLength( clAmdFftPlanHandle plHandle, clAmdFftDim dim, size_t* clLengths )
-    clAmdFftStatus clAmdFftSetPlanLength( clAmdFftPlanHandle plHandle, clAmdFftDim dim, size_t* clLengths )
-    clAmdFftStatus clAmdFftGetPlanInStride( clAmdFftPlanHandle plHandle, clAmdFftDim dim, size_t* clStrides )
-    clAmdFftStatus clAmdFftSetPlanInStride( clAmdFftPlanHandle plHandle, clAmdFftDim dim, size_t* clStrides )
-    clAmdFftStatus clAmdFftGetPlanOutStride( clAmdFftPlanHandle plHandle, clAmdFftDim dim, size_t* clStrides )
-    clAmdFftStatus clAmdFftSetPlanOutStride( clAmdFftPlanHandle plHandle, clAmdFftDim dim, size_t* clStrides )
-    clAmdFftStatus clAmdFftGetPlanDistance( clAmdFftPlanHandle plHandle, size_t* iDist, size_t* oDist )
-    clAmdFftStatus clAmdFftSetPlanDistance( clAmdFftPlanHandle plHandle, size_t iDist, size_t oDist )
-    clAmdFftStatus clAmdFftGetLayout( clAmdFftPlanHandle plHandle, clAmdFftLayout* iLayout, clAmdFftLayout* oLayout )
-    clAmdFftStatus clAmdFftSetLayout( clAmdFftPlanHandle plHandle, clAmdFftLayout iLayout, clAmdFftLayout oLayout )
-    clAmdFftStatus clAmdFftGetResultLocation( clAmdFftPlanHandle plHandle, clAmdFftResultLocation* placeness )
-    clAmdFftStatus clAmdFftSetResultLocation( clAmdFftPlanHandle plHandle, clAmdFftResultLocation placeness )
-    clAmdFftStatus clAmdFftGetPlanTransposeResult( clAmdFftPlanHandle plHandle, clAmdFftResultTransposed * transposed )
-    clAmdFftStatus clAmdFftSetPlanTransposeResult( clAmdFftPlanHandle plHandle, clAmdFftResultTransposed transposed )
-    clAmdFftStatus clAmdFftGetTmpBufSize( clAmdFftPlanHandle plHandle, size_t* buffersize )
-    clAmdFftStatus clAmdFftEnqueueTransform(clAmdFftPlanHandle plHandle,
-                                            clAmdFftDirection dir,
-                                            cl_uint numQueuesAndEvents,
-                                            cl_command_queue* commQueues,
-                                            cl_uint numWaitEvents,
-                                            cl_event* waitEvents,
-                                            cl_event* outEvents,
-                                            cl_mem* inputBuffers,
-                                            cl_mem* outputBuffers,
-                                            cl_mem tmpBuffer
-                                            )
+    ctypedef size_t clfftPlanHandle
+
+
+    clfftStatus clfftInitSetupData(clfftSetupData *setupData)
+    clfftStatus clfftSetup(const clfftSetupData *setupData)
+    clfftStatus clfftTeardown()
+    clfftStatus clfftGetVersion(cl_uint *major, cl_uint *minor, cl_uint *patch)
+    clfftStatus clfftCreateDefaultPlan(clfftPlanHandle *plHandle, cl_context context,
+                                       #const clfftDim dim, 
+                                       clfftDim dim, 
+                                       const size_t *clLengths)
+    clfftStatus clfftCopyPlan(clfftPlanHandle *out_plHandle, cl_context new_context, clfftPlanHandle in_plHandle)
+
+    clfftStatus clfftBakePlan(clfftPlanHandle plHandle, 
+                              cl_uint numQueues, 
+                              cl_command_queue *commQueueFFT, 
+                              #void (*pfn_notify)(unsigned long, void *),
+                              void (*pfn_notify)(clfftPlanHandle plHandle, void *user_data),
+                              void *user_data)
     
+    clfftStatus clfftDestroyPlan(clfftPlanHandle *plHandle)
+    clfftStatus clfftGetPlanContext(const clfftPlanHandle plHandle, cl_context *context)
+    clfftStatus clfftGetPlanPrecision(const clfftPlanHandle plHandle, clfftPrecision *precision)
+    clfftStatus clfftSetPlanPrecision(clfftPlanHandle plHandle, clfftPrecision precision)
+    clfftStatus clfftGetPlanScale(const clfftPlanHandle plHandle, clfftDirection dir, cl_float *scale)
+    clfftStatus clfftSetPlanScale(clfftPlanHandle plHandle, clfftDirection dir, cl_float scale)
+    clfftStatus clfftGetPlanBatchSize(const clfftPlanHandle plHandle, size_t *batchSize)
+    clfftStatus clfftSetPlanBatchSize(clfftPlanHandle plHandle, size_t batchSize)
+    clfftStatus clfftGetPlanDim(const clfftPlanHandle plHandle, clfftDim *dim, cl_uint *size)
+    clfftStatus clfftSetPlanDim(clfftPlanHandle plHandle, const clfftDim dim)
+    clfftStatus clfftGetPlanLength(const clfftPlanHandle plHandle, const clfftDim dim, size_t *clLengths)
+    clfftStatus clfftSetPlanLength(clfftPlanHandle plHandle, const clfftDim dim, const size_t *clLengths)
+    clfftStatus clfftGetPlanInStride(const clfftPlanHandle plHandle, const clfftDim dim, size_t *clStrides)
+    clfftStatus clfftSetPlanInStride(clfftPlanHandle plHandle, const clfftDim dim, size_t *clStrides)
+    clfftStatus clfftGetPlanOutStride(const clfftPlanHandle plHandle, const clfftDim dim, size_t *clStrides)
+    clfftStatus clfftSetPlanOutStride(clfftPlanHandle plHandle, const clfftDim dim, size_t *clStrides)
+    clfftStatus clfftGetPlanDistance(const clfftPlanHandle plHandle, size_t *iDist, size_t *oDist)
+    clfftStatus clfftSetPlanDistance(clfftPlanHandle plHandle, size_t iDist, size_t oDist)
+    clfftStatus clfftGetLayout(const clfftPlanHandle plHandle, clfftLayout *iLayout, clfftLayout *oLayout)
+    clfftStatus clfftSetLayout(clfftPlanHandle plHandle, clfftLayout iLayout, clfftLayout oLayout)
+    clfftStatus clfftGetResultLocation(const clfftPlanHandle plHandle, clfftResultLocation *placeness)
+    clfftStatus clfftSetResultLocation(clfftPlanHandle plHandle, clfftResultLocation placeness)
+    clfftStatus clfftGetPlanTransposeResult(const clfftPlanHandle plHandle, clfftResultTransposed *transposed)
+    clfftStatus clfftSetPlanTransposeResult(clfftPlanHandle plHandle, clfftResultTransposed transposed)
+    clfftStatus clfftGetTmpBufSize(const clfftPlanHandle plHandle, size_t *buffersize)
+    clfftStatus clfftEnqueueTransform(clfftPlanHandle plHandle,
+                                      clfftDirection dir, 
+                                      cl_uint numQueuesAndEvents, 
+                                      cl_command_queue *commQueues, 
+                                      cl_uint numWaitEvents, 
+                                      const cl_event *waitEvents, 
+                                      cl_event *outEvents, 
+                                      cl_mem *inputBuffers, 
+                                      cl_mem *outputBuffers, 
+                                      cl_mem tmpBuffer
+                                      )
+
 
