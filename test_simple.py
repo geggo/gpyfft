@@ -10,8 +10,8 @@ print "clAmdFft Version: %d.%d.%d"%(G.get_version())
 context = cl.create_some_context()
 queue = cl.CommandQueue(context)
 
-print "context:", hex(context.obj_ptr)
-print "queue:", hex(queue.obj_ptr)
+print "context:", hex(context.int_ptr)
+print "queue:", hex(queue.int_ptr)
 
 nd_data = np.array([[1,2,3,4], [5,6,7,8]], dtype = np.complex64)
 cl_data = cla.to_device(queue, nd_data)

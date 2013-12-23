@@ -61,7 +61,7 @@ Requirements
 ------------
 
 - python
-- pyopencl (git version newer than 4 Jun 2012)
+- pyopencl (v2013.2)
 - distribute
 - cython
 - AMD clFFT
