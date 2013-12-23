@@ -146,8 +146,8 @@ if __name__ == '__main__':
 
     #axes_list = [(0,), (1,), (0,1)] #is (1,0) the same?
     #axes_list = [(1,0), (0,1), (1,2), (2,1)]
-    axes_list = [(1,2), (2,1)]
-    #axes_list = [(1,0), (0,1), (1,2), (2,1), (0,1,2), (2,1,0)]
+    #axes_list = [(1,2), (2,1)]
+    axes_list = [(1,0), (0,1), (1,2), (2,1), (0,1,2), (2,1,0)]
 
     if True:
         print 'out of place transforms', dataC.shape

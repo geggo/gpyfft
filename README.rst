@@ -87,6 +87,20 @@ or for developing
 
    python setup.py develop -u #for uninstalling development version
 
+
+Testing
+-------
+
+For some basic testing, run in the base directory of this wrapper:
+
+python test_simple.py
+
+or for some benchmarking:
+
+python gpyfft/fft.py
+
+
+
 License:
 --------
 
@@ -95,35 +109,10 @@ LGPL
 Tested Platforms
 ----------------
 
-+---------+-----------+-------+-----------------+----------------+----------+
-|OS       |Python     |AMD APP|OpenCL           |Device          |Status    |
-|         |           |       |                 |                |          |
-|         |           |       |                 |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
-|Win7     |2.7, 64bit |2.7    |OpenCL 1.2,      |AMD Cayman      |works!    |
-|(64bit)  |           |       |Catalyst 12.4    |(6950)          |          |
-|         |           |       |                 |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
-|Win7     |2.7, 32bit |2.7    |OpenCL 1.1       |Intel i7        |works!    |
-|(64bit)  |           |       |AMD-APP-SDK-v2.4 |                |          |
-|         |           |       |(595.10)         |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
-|Win7     |2.7, 32bit |2.7    |OpenCL 1.1       |Intel i7        |works!    |
-|(64bit)  |           |       |(Intel)          |                |          |
-|         |           |       |                 |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
-|Win7     |2.7, 32bit |2.7    |OpenCL 1.0 CUDA  |Quadro 2000M    |Fails     |
-|(64bit)  |           |       |4.0.1 (NVIDIA)   |                |          |
-|         |           |       |                 |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
-|Win7     |2.7, 32bit |2.7    |OpenCL 1.2       |Tahiti (7970)   |works!    |
-|(64bit)  |           |       |AMD-APP (923.1)  |                |          |
-|         |           |       |                 |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
-|Win7     |2.7, 32bit |2.7    |OpenCL 1.2       |AMD Phenom IIx4 |works!    |
-|(64bit)  |           |       |AMD-APP (923.1)  |                |          |
-|         |           |       |                 |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
+This wrapper has been tested on Windows 7 (64bit) with AMD Radeon
+6950, and OS X 10.7, 10.9 with Nvidia GT330M. Success reports for more
+recent systems are welcome!
 
-(C) Gregor Thalhammer 2012
+
+(C) Gregor Thalhammer 2013
 
