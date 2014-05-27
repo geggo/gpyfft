@@ -192,7 +192,15 @@ cdef class Plan(object):
         for i in range(ndim):
             lengths[i] = shape[i]
         
-        clfftCreateDefaultPlan(&self.plan, context_handle, ndim, &lengths[0])
+        cdef clfftDim ndim_cl
+        if ndim==1:
+            ndim_cl = CLFFT_1D
+        elif ndim==2:
+            ndim_cl = CLFFT_2D
+        elif ndim==3:
+            ndim_cl = CLFFT_3D
+
+        clfftCreateDefaultPlan(&self.plan, context_handle, ndim_cl, &lengths[0])
 
     property precision:
         """the floating point precision of the FFT data"""    
