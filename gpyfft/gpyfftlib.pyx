@@ -181,7 +181,7 @@ cdef class Plan(object):
         if not isinstance(context, cl.Context):
             raise TypeError('expected cl.Context as type of first argument')
         
-        cdef cl_context context_handle = <cl_context><voidptr_t>context.obj_ptr
+        cdef cl_context context_handle = <cl_context><voidptr_t>context.int_ptr
 
         ndim = len(shape)
         if ndim not in (1,2,3):
@@ -403,7 +403,7 @@ cdef class Plan(object):
         cdef int i
         for i in range(n_queues):
             assert isinstance(queues[i], cl.CommandQueue)
-            queues_[i] = <cl_command_queue><voidptr_t>queues[i].obj_ptr
+            queues_[i] = <cl_command_queue><voidptr_t>queues[i].int_ptr
         errcheck(clAmdFftBakePlan(self.plan,
                                   n_queues, queues_,
                                   NULL, NULL))
@@ -471,7 +471,7 @@ cdef class Plan(object):
         assert n_queues <= MAX_QUEUES
         for i, queue in enumerate(queues):
             assert isinstance(queue, cl.CommandQueue)
-            queues_[i] = <cl_command_queue><voidptr_t>queue.obj_ptr
+            queues_[i] = <cl_command_queue><voidptr_t>queue.int_ptr
             
         cdef cl_event wait_for_events_array[MAX_WAITFOR_EVENTS]
         cdef cl_event* wait_for_events_ = NULL
@@ -481,7 +481,7 @@ cdef class Plan(object):
             assert n_waitfor_events <= MAX_WAITFOR_EVENTS
             for i, event in enumerate(wait_for_events):
                 assert isinstance(event, cl.Event)
-                wait_for_events_array[i] = <cl_event><voidptr_t>event.obj_ptr
+                wait_for_events_array[i] = <cl_event><voidptr_t>event.int_ptr
             wait_for_events_ = &wait_for_events_array[0]
 
         cdef cl_mem in_buffers_[2]
@@ -491,7 +491,7 @@ cdef class Plan(object):
         assert n_in_buffers <= 2
         for i, in_buffer in enumerate(in_buffers):
             assert isinstance(in_buffer, cl.Buffer)
-            in_buffers_[i] = <cl_mem><voidptr_t>in_buffer.obj_ptr
+            in_buffers_[i] = <cl_mem><voidptr_t>in_buffer.int_ptr
 
         cdef cl_mem out_buffers_array[2]
         cdef cl_mem* out_buffers_ = NULL
@@ -502,13 +502,13 @@ cdef class Plan(object):
             assert n_out_buffers in (1,2)
             for i, out_buffer in enumerate(out_buffers):
                 assert isinstance(out_buffer, cl.Buffer)
-                out_buffers_array[i] = <cl_mem><voidptr_t>out_buffer.obj_ptr
+                out_buffers_array[i] = <cl_mem><voidptr_t>out_buffer.int_ptr
             out_buffers_ = &out_buffers_array[0]
 
         cdef cl_mem tmp_buffer_ = NULL
         if temp_buffer is not None:
             assert isinstance(temp_buffer, cl.Buffer)
-            tmp_buffer_ = <cl_mem><voidptr_t>temp_buffer.obj_ptr
+            tmp_buffer_ = <cl_mem><voidptr_t>temp_buffer.int_ptr
 
         cdef cl_event out_cl_events[MAX_QUEUES]
 
