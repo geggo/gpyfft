@@ -1,20 +1,16 @@
 gpyfft
 ======
 
-A Python wrapper for the OpenCL FFT library APPML/clAmdFft from AMD
+A Python wrapper for the OpenCL FFT library clFFT from AMD
 
 Introduction
 ------------
 
 AMD has created a nice FFT library for use with their OpenCL
-implementation called `AMD Accelerated Parallel Processing Math
-Libraries
+implementation called `clFFT
 <http://developer.amd.com/libraries/appmathlibs/Pages/default.aspx>`_
-This C library is available as precompiled binaries for Windows and
-Linux platforms. It is optimized for AMD GPUs. (Note: This library is
-not limited to work only with hardware from AMD, but according to this
-`forum entry <http://devgurus.amd.com/thread/159149>`_ it currently
-yields wrong results on NVidia GPUs.)
+which has been released as open source (Apache 2.0 license)
+
 
 This python wrapper is designed to tightly integrate with pyopencl. It
 consists of a low-level cython based wrapper with an interface similar
@@ -65,21 +61,18 @@ Requirements
 ------------
 
 - python
-- pyopencl (git version newer than 4 Jun 2012)
+- pyopencl (v2013.2)
 - distribute
 - cython
-- APPML clAmdFft 1.8
-- AMD APP SDK
+- AMD clFFT
 
 Building and Installation
 -------------------------
 
-1) Install the AMD library:
+1) Build and install the AMD clFFT library:
 
-   - install clAmdFft
-   - add clAmdFft/binXX to PATH (or copy clAmdFft.Runtime.dll to
-     package directory
-   - edit setup.py to point to clAmdFft and AMD APP directories
+   - install clFFT
+   - edit setup.py to point to clFFT directory
 
 Then, either:
 
@@ -94,6 +87,20 @@ or for developing
 
    python setup.py develop -u #for uninstalling development version
 
+
+Testing
+-------
+
+For some basic testing, run in the base directory of this wrapper:
+
+python test_simple.py
+
+or for some benchmarking:
+
+python gpyfft/fft.py
+
+
+
 License:
 --------
 
@@ -102,35 +109,10 @@ LGPL
 Tested Platforms
 ----------------
 
-+---------+-----------+-------+-----------------+----------------+----------+
-|OS       |Python     |AMD APP|OpenCL           |Device          |Status    |
-|         |           |       |                 |                |          |
-|         |           |       |                 |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
-|Win7     |2.7, 64bit |2.7    |OpenCL 1.2,      |AMD Cayman      |works!    |
-|(64bit)  |           |       |Catalyst 12.4    |(6950)          |          |
-|         |           |       |                 |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
-|Win7     |2.7, 32bit |2.7    |OpenCL 1.1       |Intel i7        |works!    |
-|(64bit)  |           |       |AMD-APP-SDK-v2.4 |                |          |
-|         |           |       |(595.10)         |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
-|Win7     |2.7, 32bit |2.7    |OpenCL 1.1       |Intel i7        |works!    |
-|(64bit)  |           |       |(Intel)          |                |          |
-|         |           |       |                 |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
-|Win7     |2.7, 32bit |2.7    |OpenCL 1.0 CUDA  |Quadro 2000M    |Fails     |
-|(64bit)  |           |       |4.0.1 (NVIDIA)   |                |          |
-|         |           |       |                 |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
-|Win7     |2.7, 32bit |2.7    |OpenCL 1.2       |Tahiti (7970)   |works!    |
-|(64bit)  |           |       |AMD-APP (923.1)  |                |          |
-|         |           |       |                 |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
-|Win7     |2.7, 32bit |2.7    |OpenCL 1.2       |AMD Phenom IIx4 |works!    |
-|(64bit)  |           |       |AMD-APP (923.1)  |                |          |
-|         |           |       |                 |                |          |
-+---------+-----------+-------+-----------------+----------------+----------+
+This wrapper has been tested on Windows 7 (64bit) with AMD Radeon
+6950, and OS X 10.7, 10.9 with Nvidia GT330M. Success reports for more
+recent systems are welcome!
 
-(C) Gregor Thalhammer 2012
+
+(C) Gregor Thalhammer 2013
 

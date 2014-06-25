@@ -41,7 +41,7 @@ class GpyFFT_Error(Exception):
                 error_desc = "unknown error %d", self.errorcode
         return repr(error_desc)
 
-cdef inline bint errcheck(clAmdFftStatus result) except True:
+cdef inline bint errcheck(clfftStatus result) except True:
     cdef bint is_error = (result != CLFFT_SUCCESS)
     if is_error:
         raise GpyFFT_Error(result)
@@ -52,14 +52,14 @@ cdef inline bint errcheck(clAmdFftStatus result) except True:
 cdef class GpyFFT(object):
     """The GpyFFT object is the primary interface to the AMD FFT library"""
     def __cinit__(self, debug = False):
-        cdef clAmdFftSetupData setup_data
-        errcheck(clAmdFftInitSetupData(&setup_data))
+        cdef clfftSetupData setup_data
+        errcheck(clfftInitSetupData(&setup_data))
         if debug:
             setup_data.debugFlags |= CLFFT_DUMP_PROGRAMS
-        errcheck(clAmdFftSetup(&setup_data))
+        errcheck(clfftSetup(&setup_data))
 
     def __dealloc__(self):
-        errcheck(clAmdFftTeardown())
+        errcheck(clfftTeardown())
 
     def get_version(self):
         """returns the version of the underlying AMD FFT library
@@ -76,15 +76,15 @@ cdef class GpyFFT(object):
         Raises
         ------
         GpyFFT_Error
-                An error occurred accessing the clAmdFftGetVersion function
+                An error occurred accessing the clfftGetVersion function
                 
         Notes
         -----
-            The underlying AMD FFT call is 'clAmdFftCreateDefaultPlan'
+            The underlying AMD FFT call is 'clfftCreateDefaultPlan'
         """
 
         cdef cl_uint major, minor, patch
-        errcheck(clAmdFftGetVersion(&major, &minor, &patch))
+        errcheck(clfftGetVersion(&major, &minor, &patch))
         return (major, minor, patch)
     
     def create_plan(self, context, tuple shape):
@@ -138,12 +138,12 @@ cdef class Plan(object):
     These are specified later, when the plan is executed.
     """
 
-    cdef clAmdFftPlanHandle plan
+    cdef clfftPlanHandle plan
     cdef object lib
 
     def __dealloc__(self):
         if self.plan:
-            errcheck(clAmdFftDestroyPlan(&self.plan))
+            errcheck(clfftDestroyPlan(&self.plan))
 
     def __cinit__(self):
         self.plan = 0
@@ -174,7 +174,7 @@ cdef class Plan(object):
 
         Notes
         -----
-            The underlying AMD FFT call is 'clAmdFftCreateDefaultPlan'
+            The underlying AMD FFT call is 'clfftCreateDefaultPlan'
         """
     
         self.lib = lib
@@ -192,56 +192,64 @@ cdef class Plan(object):
         for i in range(ndim):
             lengths[i] = shape[i]
         
-        clAmdFftCreateDefaultPlan(&self.plan, context_handle, ndim, &lengths[0])
+        cdef clfftDim ndim_cl
+        if ndim==1:
+            ndim_cl = CLFFT_1D
+        elif ndim==2:
+            ndim_cl = CLFFT_2D
+        elif ndim==3:
+            ndim_cl = CLFFT_3D
+
+        clfftCreateDefaultPlan(&self.plan, context_handle, ndim_cl, &lengths[0])
 
     property precision:
         """the floating point precision of the FFT data"""    
         def __get__(self):
-            cdef clAmdFftPrecision precision
-            errcheck(clAmdFftGetPlanPrecision(self.plan, &precision))
+            cdef clfftPrecision precision
+            errcheck(clfftGetPlanPrecision(self.plan, &precision))
             return precision
-        def __set__(self, clAmdFftPrecision value):
-            errcheck(clAmdFftSetPlanPrecision(self.plan, value))
+        def __set__(self, clfftPrecision value):
+            errcheck(clfftSetPlanPrecision(self.plan, value))
 
     property scale_forward:
         """the scaling factor to be applied to the FFT data for forward transforms"""    
         def __get__(self):
             cdef cl_float scale
-            errcheck(clAmdFftGetPlanScale(self.plan, CLFFT_FORWARD, &scale))
+            errcheck(clfftGetPlanScale(self.plan, CLFFT_FORWARD, &scale))
             return scale
         def __set__(self, cl_float value):
-            errcheck(clAmdFftSetPlanScale(self.plan, CLFFT_FORWARD, value))
+            errcheck(clfftSetPlanScale(self.plan, CLFFT_FORWARD, value))
 
     property scale_backward:
         """the scaling factor to be applied to the FFT data for backward transforms"""        
         def __get__(self):
             cdef cl_float scale
-            errcheck(clAmdFftGetPlanScale(self.plan, CLFFT_BACKWARD, &scale))
+            errcheck(clfftGetPlanScale(self.plan, CLFFT_BACKWARD, &scale))
             return scale
         def __set__(self, cl_float value):
-            errcheck(clAmdFftSetPlanScale(self.plan, CLFFT_BACKWARD, value))
+            errcheck(clfftSetPlanScale(self.plan, CLFFT_BACKWARD, value))
 
     property batch_size:
         """the number of discrete arrays that this plan can handle concurrently"""    
         def __get__(self):
             cdef size_t nbatch
-            errcheck(clAmdFftGetPlanBatchSize(self.plan, &nbatch))
+            errcheck(clfftGetPlanBatchSize(self.plan, &nbatch))
             return nbatch
         def __set__(self, nbatch):
-            errcheck(clAmdFftSetPlanBatchSize(self.plan, nbatch))
+            errcheck(clfftSetPlanBatchSize(self.plan, nbatch))
 
-    cdef clAmdFftDim get_dim(self):
-        cdef clAmdFftDim dim
+    cdef clfftDim get_dim(self):
+        cdef clfftDim dim
         cdef cl_uint size
-        errcheck(clAmdFftGetPlanDim(self.plan, &dim, &size))
+        errcheck(clfftGetPlanDim(self.plan, &dim, &size))
         return dim
             
     property shape:
         """the length of each dimension of the FFT"""
         def __get__(self):
-            cdef clAmdFftDim dim = self.get_dim()
+            cdef clfftDim dim = self.get_dim()
             cdef size_t sizes[3]
-            errcheck(clAmdFftGetPlanLength(self.plan, dim, &sizes[0]))
+            errcheck(clfftGetPlanLength(self.plan, dim, &sizes[0]))
             if dim == 1:
                 return (sizes[0],)
             elif dim == 2:
@@ -251,21 +259,21 @@ cdef class Plan(object):
 
         def __set__(self, tuple shape):
             assert len(shape) <= 3
-            cdef clAmdFftDim dim = <clAmdFftDim>len(shape)
-            #errcheck(clAmdFftSetPlanDim(self.plan, dim))
+            cdef clfftDim dim = <clfftDim>len(shape)
+            #errcheck(clfftSetPlanDim(self.plan, dim))
             cdef size_t sizes[3]
             cdef int i
             for i in range(len(shape)):
                 sizes[i] = shape[i]
-            errcheck(clAmdFftSetPlanLength(self.plan, dim, &sizes[0]))
+            errcheck(clfftSetPlanLength(self.plan, dim, &sizes[0]))
 
     property strides_in:
         """the distance between consecutive elements for input buffers
         in a dimension"""    
         def __get__(self):
-            cdef clAmdFftDim dim = self.get_dim()
+            cdef clfftDim dim = self.get_dim()
             cdef size_t strides[3]
-            errcheck(clAmdFftGetPlanInStride(self.plan, dim, strides))
+            errcheck(clfftGetPlanInStride(self.plan, dim, strides))
             if dim == 1:
                 return (strides[0],)
             elif dim == 2:
@@ -275,20 +283,20 @@ cdef class Plan(object):
 
         def __set__(self, tuple strides):
             assert len(strides) <= 3
-            cdef clAmdFftDim dim = <clAmdFftDim>len(strides)
+            cdef clfftDim dim = <clfftDim>len(strides)
             cdef size_t c_strides[3]
             cdef int i
             for i in range(dim):
                 c_strides[i] = strides[i]
-            errcheck(clAmdFftSetPlanInStride(self.plan, dim, &c_strides[0]))
+            errcheck(clfftSetPlanInStride(self.plan, dim, &c_strides[0]))
 
     property strides_out:
         """the distance between consecutive elements for output buffers 
         in a dimension"""        
         def __get__(self):            
-            cdef clAmdFftDim dim = self.get_dim()
+            cdef clfftDim dim = self.get_dim()
             cdef size_t strides[3]
-            errcheck(clAmdFftGetPlanOutStride(self.plan, dim, strides))
+            errcheck(clfftGetPlanOutStride(self.plan, dim, strides))
             if dim == 1:
                 return (strides[0],)
             elif dim == 2:
@@ -298,47 +306,47 @@ cdef class Plan(object):
 
         def __set__(self, tuple strides):
             assert len(strides) <= 3
-            cdef clAmdFftDim dim = <clAmdFftDim>len(strides)
+            cdef clfftDim dim = <clfftDim>len(strides)
             cdef size_t c_strides[3]
             cdef int i
             for i in range(dim):
                 c_strides[i] = strides[i]
-            errcheck(clAmdFftSetPlanOutStride(self.plan, dim, &c_strides[0]))
+            errcheck(clfftSetPlanOutStride(self.plan, dim, &c_strides[0]))
             
     property distances:
         """the distance between array objects"""    
         def __get__(self):
             cdef size_t dist_in, dist_out
-            errcheck(clAmdFftGetPlanDistance(self.plan, &dist_in, &dist_out))
+            errcheck(clfftGetPlanDistance(self.plan, &dist_in, &dist_out))
             return (dist_in, dist_out)
         def __set__(self, tuple distances):
             assert len(distances) == 2
-            errcheck(clAmdFftSetPlanDistance(self.plan, distances[0], distances[1]))
+            errcheck(clfftSetPlanDistance(self.plan, distances[0], distances[1]))
 
     property layouts:
         """the expected layout of the output buffers"""        
         def __get__(self):
-            cdef clAmdFftLayout layout_in, layout_out
-            errcheck(clAmdFftGetLayout(self.plan, &layout_in, &layout_out))
+            cdef clfftLayout layout_in, layout_out
+            errcheck(clfftGetLayout(self.plan, &layout_in, &layout_out))
             return (layout_in, layout_out)
         def __set__(self, tuple layouts):
             assert len(layouts) == 2
-            errcheck(clAmdFftSetLayout(self.plan, layouts[0], layouts[1]))
+            errcheck(clfftSetLayout(self.plan, layouts[0], layouts[1]))
         
     property inplace:
         """determines if the input buffers are going to be overwritten with 
         results (True == inplace, False == out of place)"""    
         def __get__(self):
-            cdef clAmdFftResultLocation placeness
-            errcheck(clAmdFftGetResultLocation(self.plan, &placeness))
+            cdef clfftResultLocation placeness
+            errcheck(clfftGetResultLocation(self.plan, &placeness))
             return placeness == CLFFT_INPLACE
         def __set__(self, value):
-            cdef clAmdFftResultLocation placeness
+            cdef clfftResultLocation placeness
             if value:
                 placeness = CLFFT_INPLACE
             else:
                 placeness = CLFFT_OUTOFPLACE
-            errcheck(clAmdFftSetResultLocation(self.plan, placeness))
+            errcheck(clfftSetResultLocation(self.plan, placeness))
 
     property temp_array_size:
         """Buffer size (in bytes), which may be needed internally for
@@ -346,7 +354,7 @@ cdef class Plan(object):
         before."""    
         def __get__(self):
             cdef size_t buffersize
-            errcheck(clAmdFftGetTmpBufSize(self.plan, &buffersize))
+            errcheck(clfftGetTmpBufSize(self.plan, &buffersize))
             return buffersize
 
     property transpose_result:
@@ -356,22 +364,22 @@ cdef class Plan(object):
         False: skip final transpose
         """    
         def __get__(self):
-            cdef clAmdFftResultTransposed transposed
-            errcheck(clAmdFftGetPlanTransposeResult(self.plan, &transposed))
+            cdef clfftResultTransposed transposed
+            errcheck(clfftGetPlanTransposeResult(self.plan, &transposed))
             return transposed == CLFFT_TRANSPOSED
         def __set__(self, transpose):
-            cdef clAmdFftResultTransposed transposed
+            cdef clfftResultTransposed transposed
             if transpose:
                 transposed = CLFFT_TRANSPOSED
             else:
                 transposed = CLFFT_NOTRANSPOSE
-            errcheck(clAmdFftSetPlanTransposeResult(self.plan, transposed))
+            errcheck(clfftSetPlanTransposeResult(self.plan, transposed))
 
     def bake(self, queues):
         """Prepare the plan for execution.
 
         Prepares and compiles OpenCL kernels internally used to
-        perform the transform. At this point, the clAmdFft runtime
+        perform the transform. At this point, the clfft runtime
         applies all implemented optimizations, possibly including
         running kernel experiments on the devices in the plan
         context. This can take a long time to execute. If not called,
@@ -388,11 +396,11 @@ cdef class Plan(object):
         Raises
         ------
             `GpyFFT_Error`
-                An error occurred accessing the clAmdFftBakePlan function
+                An error occurred accessing the clfftBakePlan function
 
         Notes
         -----
-            The underlying AMD FFT call is 'clAmdFftBakePlan'
+            The underlying AMD FFT call is 'clfftBakePlan'
         """
 
         if isinstance(queues, cl.CommandQueue):
@@ -404,7 +412,7 @@ cdef class Plan(object):
         for i in range(n_queues):
             assert isinstance(queues[i], cl.CommandQueue)
             queues_[i] = <cl_command_queue><voidptr_t>queues[i].int_ptr
-        errcheck(clAmdFftBakePlan(self.plan,
+        errcheck(clfftBakePlan(self.plan,
                                   n_queues, queues_,
                                   NULL, NULL))
 
@@ -449,16 +457,16 @@ cdef class Plan(object):
         Raises
         ------
             `GpyFFT_Error`
-                An error occurred accessing the clAmdFftEnqueueTransform function
+                An error occurred accessing the clfftEnqueueTransform function
 
         Notes
         -----
-            The underlying AMD FFT call is 'clAmdFftEnqueueTransform'
+            The underlying AMD FFT call is 'clfftEnqueueTransform'
         """
 
         cdef int i
 
-        cdef clAmdFftDirection direction
+        cdef clfftDirection direction
         if direction_forward:
             direction = CLFFT_FORWARD
         else:
@@ -512,7 +520,7 @@ cdef class Plan(object):
 
         cdef cl_event out_cl_events[MAX_QUEUES]
 
-        errcheck(clAmdFftEnqueueTransform(self.plan,
+        errcheck(clfftEnqueueTransform(self.plan,
                                           direction,
                                           n_queues,
                                           &queues_[0],
