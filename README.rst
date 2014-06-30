@@ -88,12 +88,42 @@ or for developing
    python setup.py develop -u #for uninstalling development version
 
 
+Detailed build instructions for Windows (64bit), Python 2.7
+-----------------------------------------------------------
+
+Requirements: 
+* C/C++ Compiler. Tested with free compilers (64bit) from Microsoft Windows SDK v7.0
+* cmake (3.0)
+* OpenCL environment (tested with AMD APP SDK, 2.9)
+
+1) Download clFFT from github
+
+    git checkout https://github.com/clMathLibraries/clFFT.git
+
+2) in `.../clFFT/src`, open SDK command shell (Start - Programs -
+Microsoft Windows SDK v7.1 - CMD Shell)
+
+	setenv /Release
+	cmake -G "NMake Makefile"
+	nmake
+	
+or use `cmake-gui`, with source code `.../clFFT/src`, build dir `.../clFFT/src`,
+manually change `CMAKE/CMAKE_BUILD_TYPE` to `Release`
+	
+In `.../clFFT/src/staging` should contain `clFFT.dll`.
+
+3) in `gpyfft/setup.py` check that in setup.py `CLFFT_DIR` points to the clFFT folder, and
+`CL_INCL_DIRS` to the OpenCL headers. Note that the setup script copies the clFFT
+binary libs (clFFT.dll, ...) to the package directory.
+
+
+
 Testing
 -------
 
 For some basic testing, run in the base directory of this wrapper:
 
-python test_simple.py
+python gpyfft/test_simple.py
 
 or for some benchmarking:
 
