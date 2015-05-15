@@ -6,20 +6,18 @@ A Python wrapper for the OpenCL FFT library clFFT from AMD
 Introduction
 ------------
 
-AMD has created a nice FFT library for use with their OpenCL
-implementation called `clFFT
-<http://developer.amd.com/libraries/appmathlibs/Pages/default.aspx>`_
-which has been released as open source (Apache 2.0 license)
-
+AMD has created a open source FFT library for GPU devices based on OpenCL,  called `clFFT
+<https://github.com/clMathLibraries/clFFT>`_
+(released under Apache 2.0 license).
 
 This python wrapper is designed to tightly integrate with pyopencl. It
 consists of a low-level cython based wrapper with an interface similar
-to the underlying C library. On top of that it offers a high-level
+to the underlying C library. On top of that it offers a easy-to-use high-level
 interface designed to work on data contained in instances of
 pyopencl.array.Array, a numpy work-alike array class. The high-level
 interface is similar to that of `pyFFTW
-<https://github.com/hgomersal/pyFFTW>`_, a python wrapper for the FFTW
-library.
+<https://github.com/hgomersall/pyFFTW>`_, a python wrapper for the FFTW
+library. For details of the high-level interface see `fft.py <gpyfft/fft.py>`_.
 
 Compared to `pyfft <http://github.com/Manticore/pyfft>`_, a python
 implementation of Apple's FFT library, AMD's FFT library offers some
@@ -33,7 +31,7 @@ inplace, transform size 1024x1024, batch size 4, on AMD Cayman, HD6950).
 Status
 ------
 
-This wrapper is currently under development.
+This wrapper is functional, the high-level interface is not completely settled.
 
 work done
 ~~~~~~~~~
@@ -49,19 +47,21 @@ missing features
 -  debug mode to output generated kernels
 -  documentation for low level wrapper (instead refer to library doc)
 -  define API for high level interface
--  high level interface: double precision data, planar data,
+-  high-level interface: double precision data, planar data,
    real<->complex transforms
--  high level interface: tests for non-contiguous data
+-  high-level interface: tests for non-contiguous data
 -  handling of batched transforms in the general case, e.g. shape
    (4,5,6), axes = (1,), i.e., more than one axes where no transform is
    performed. (not always possible with single call for arbitrary
    strides, need to figure out when possible)
+-  high-level interface: implement some strategy to deliver optimal performance 
+   (e.g. order of transforms along axes for 2D, 3D transforms depending on memory layout)
 
 Requirements
 ------------
 
-- python
-- pyopencl (v2013.2)
+- python (tested with 2.7, should work with 3.x)
+- pyopencl (>v2013.2 required)
 - distribute
 - cython
 - AMD clFFT
@@ -91,7 +91,8 @@ or for developing
 Detailed build instructions for Windows (64bit), Python 2.7
 -----------------------------------------------------------
 
-Requirements: 
+Requirements:
+
 * C/C++ Compiler. Tested with free compilers (64bit) from Microsoft Windows SDK v7.0
 * cmake (3.0)
 * OpenCL environment (tested with AMD APP SDK, 2.9)
@@ -117,7 +118,6 @@ In `.../clFFT/src/staging` should contain `clFFT.dll`.
 binary libs (clFFT.dll, ...) to the package directory.
 
 
-
 Testing
 -------
 
@@ -128,7 +128,6 @@ python gpyfft/test_simple.py
 or for some benchmarking:
 
 python gpyfft/fft.py
-
 
 
 License:
@@ -144,5 +143,5 @@ This wrapper has been tested on Windows 7 (64bit) with AMD Radeon
 recent systems are welcome!
 
 
-(C) Gregor Thalhammer 2013
+(C) Gregor Thalhammer 2015
 
