@@ -175,9 +175,9 @@ if __name__ == '__main__':
                             t_ms, gflops
                             ))
                         assert_array_almost_equal(result.get(), npfftn(data.get(), axes = axes))
-                    except gpyfft.GpyFFT_Error, e:
+                    except gpyfft.GpyFFT_Error as e:
                         print(e)
-                    except AssertionError, e:
+                    except AssertionError as e:
                         print(e)
 
         print()
