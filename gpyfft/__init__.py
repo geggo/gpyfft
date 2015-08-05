@@ -1,2 +1,2 @@
-from gpyfftlib import GpyFFT, GpyFFT_Error, Plan
-from fft import *
+from gpyfft.gpyfftlib import GpyFFT, GpyFFT_Error, Plan
+from gpyfft.fft import *
