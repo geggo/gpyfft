@@ -38,15 +38,15 @@ class FFT(object):
         plan.batch_size = t_batchsize_in #assert t_batchsize_in == t_batchsize_out
         
         if False:
-            print 'axes', axes        
-            print 'in_array.shape:          ', in_array.shape
-            print 'in_array.strides/itemsize', tuple(s/in_array.dtype.itemsize for s in in_array.strides)
-            print 'shape transform          ', t_shape
-            print 't_strides                ', t_strides_in
-            print 'distance_in              ', t_distance_in
-            print 'batchsize                ', t_batchsize_in
-            print 't_stride_out             ', t_strides_out
-            print 'inplace                  ', t_inplace
+            print('axes', axes        )
+            print('in_array.shape:          ', in_array.shape)
+            print('in_array.strides/itemsize', tuple(s/in_array.dtype.itemsize for s in in_array.strides))
+            print('shape transform          ', t_shape)
+            print('t_strides                ', t_strides_in)
+            print('distance_in              ', t_distance_in)
+            print('batchsize                ', t_batchsize_in)
+            print('t_stride_out             ', t_strides_out)
+            print('inplace                  ', t_inplace)
 
         plan.bake(self.queue)
         temp_size = plan.temp_array_size
@@ -150,8 +150,8 @@ if __name__ == '__main__':
     axes_list = [(1,0), (0,1), (1,2), (2,1), (0,1,2), (2,1,0)]
 
     if True:
-        print 'out of place transforms', dataC.shape
-        print 'axes         in out'
+        print('out of place transforms', dataC.shape)
+        print('axes         in out')
         for axes in axes_list:
             for data in (dataC, dataF):
                 for result in (resultC, resultF):
@@ -168,20 +168,20 @@ if __name__ == '__main__':
                         toc = time.clock()
                         t_ms = 1e3*(toc-tic)/n_run
                         gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
-                        print '%-10s %3s %3s %5.2fms %4d Gflops'%(
+                        print('%-10s %3s %3s %5.2fms %4d Gflops'%(
                             axes,
                             'C' if data.flags.c_contiguous else 'F',  
                             'C' if result.flags.c_contiguous else 'F',  
                             t_ms, gflops
-                            )
+                            ))
                         assert_array_almost_equal(result.get(), npfftn(data.get(), axes = axes))
                     except gpyfft.GpyFFT_Error, e:
-                        print e
+                        print(e)
                     except AssertionError, e:
-                        print e
+                        print(e)
 
-        print
-        print 'in place transforms', nd_dataC.shape
+        print()
+        print('in place transforms', nd_dataC.shape)
 
     for axes in axes_list:
         for nd_data in (nd_dataC, nd_dataF):
@@ -196,11 +196,11 @@ if __name__ == '__main__':
             toc = time.clock()
             t_ms = 1e3*(toc-tic)/n_run
             gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
-            print '%-10s %3s %5.2fms %4d Gflops'%(
+            print('%-10s %3s %5.2fms %4d Gflops'%(
                 axes,
                 'C' if data.flags.c_contiguous else 'F',
                 t_ms, gflops
-                )
+                ))
             assert_array_almost_equal(data.get(queue=queue), npfftn(nd_data, axes = axes))
 
 
