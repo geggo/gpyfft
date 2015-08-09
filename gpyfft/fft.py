@@ -200,7 +200,7 @@ if __name__ == '__main__':
                 axes,
                 'C' if data.flags.c_contiguous else 'F',
                 t_ms, gflops
-                )
+                ))
             #assert_array_almost_equal(data.get(queue=queue), npfftn(nd_data, axes = axes)) #never fails ????
 
 
@@ -215,4 +215,4 @@ if __name__ == '__main__':
     # a[:,:,0] #indices of individual transform subarrays
     # a[:,0,:]
 
-    # #nditer, nested_iters, 
+    # #nditer, nested_iters,
