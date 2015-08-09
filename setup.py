@@ -34,7 +34,7 @@ def copy_clfftdll_to_package():
     shutil.copy(
         os.path.join(CLFFT_DIR, 'src', 'staging', 'StatTimer.dll'),
         'gpyfft')
-    print "copied clFFT.dll, StatTimer.dll"
+    print("copied clFFT.dll, StatTimer.dll")
                  
 package_data = {}
 if 'Windows' in platform.system():
