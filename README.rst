@@ -138,9 +138,11 @@ LGPL
 Tested Platforms
 ----------------
 
-This wrapper has been tested on Windows 7 (64bit) with AMD Radeon
-6950, and OS X 10.7, 10.9 with Nvidia GT330M. Success reports for more
-recent systems are welcome!
+This wrapper has been tested with Python 2.7 both on Windows 7 (64bit) with AMD Radeon
+6950, and OS X 10.7, 10.9 and 10.10 with Nvidia GT330M. Should also
+work with Python 3, thanks to contribution by Nevada Sanchez.
+
+Success reports for more recent systems are welcome!
 
 
 (C) Gregor Thalhammer 2015
