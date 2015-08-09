@@ -158,7 +158,7 @@ if __name__ == '__main__':
                     try:
 
                         transform = FFT(context, queue, (data,), (result,), axes = axes)
-                        #transform.plan.transpose_result = True #not implemented
+                        #transform.plan.transpose_result = True #not implemented for some transforms (works e.g. for out of place, (2,1) C C)
                         tic = time.clock()
                         for i in range(n_run):
                             events = transform.enqueue()
@@ -174,10 +174,12 @@ if __name__ == '__main__':
                             'C' if result.flags.c_contiguous else 'F',  
                             t_ms, gflops
                             )
-                        assert_array_almost_equal(result.get(), npfftn(data.get(), axes = axes))
+                        assert_array_almost_equal(result.get(), npfftn(data.get(), axes = axes)) #never fails ??????
                     except gpyfft.GpyFFT_Error, e:
                         print e
                     except AssertionError, e:
+                        print e
+                    except Exception, e:
                         print e
 
         print
@@ -201,7 +203,7 @@ if __name__ == '__main__':
                 'C' if data.flags.c_contiguous else 'F',
                 t_ms, gflops
                 )
-            assert_array_almost_equal(data.get(queue=queue), npfftn(nd_data, axes = axes))
+            #assert_array_almost_equal(data.get(queue=queue), npfftn(nd_data, axes = axes)) #never fails ????
 
 
 

@@ -2,7 +2,7 @@ import os, os.path, platform
 from setuptools import setup, Extension
 from Cython.Build import cythonize
 
-CLFFT_DIR = r'C:\Users\lab\Devel\clFFT'
+CLFFT_DIR = r'/Users/gregor/Devel/clFFT'
 
 CL_INCL_DIRS = []
 if 'Windows' in platform.system():
