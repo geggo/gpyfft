@@ -68,9 +68,11 @@ Requirements
 ------------
 
 - python (tested with 2.7, works also with 3.x), with packages
+
   * pyopencl
   * distribute
   * cython
+
 - clFFT
 
 Building and Installation
@@ -84,12 +86,12 @@ Then, either:
 
 3. `python setup.py install`
 
-   or for developing
+   or for developing::
    
-	python setup.py develop
-   	python setup.py build\_ext --inplace
+        python setup.py develop
+        python setup.py build\_ext --inplace
    	
-   (rerun last command whenever cython extension has changed)
+   (rerun last command whenever cython extension has changed). To uninstall develop version::
 
 	python setup.py develop -u #for uninstalling development version`
 
@@ -107,30 +109,30 @@ Requirements
 How to build clFFT from source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1) Download clFFT from github
+* Download clFFT from github::
 
 	git checkout https://github.com/clMathLibraries/clFFT.git
 
-2) in `.../clFFT/src`, open SDK command shell (Start - Programs -
-Microsoft Windows SDK v7.1 - CMD Shell)
+* in `.../clFFT/src`, open SDK command shell (Start - Programs - Microsoft Windows SDK v7.1 - CMD Shell)::
 
 	setenv /Release
 	cmake -G "NMake Makefile"
 	nmake
 	
-or use `cmake-gui`, with source code `.../clFFT/src`, build dir `.../clFFT/src`,
-manually change `CMAKE/CMAKE_BUILD_TYPE` to `Release`
+  or use `cmake-gui`, with source code `.../clFFT/src`, build dir `.../clFFT/src`,
+  manually change `CMAKE/CMAKE_BUILD_TYPE` to `Release`
 	
-In `.../clFFT/src/staging` should contain `clFFT.dll`.
+  In `.../clFFT/src/staging` should contain `clFFT.dll`.
 
 How to build gpyfft
 ~~~~~~~~~~~~~~~~~~~
 
-3) In `gpyfft/setup.py` check that in setup.py `CLFFT_DIR` points to the clFFT folder, and
-`CL_INCL_DIRS` to the OpenCL headers. Note that the setup script copies the clFFT
-binary libs (clFFT.dll, ...) to the package directory. In case, edit adjust the path settings for the clFFT libraries and include files.
+* In `gpyfft/setup.py` check that in setup.py `CLFFT_DIR` points to the clFFT folder, and
+  `CL_INCL_DIRS` to the OpenCL headers. Note that the setup script copies the clFFT
+  binary libs (clFFT.dll, ...) to the package directory. In case, edit adjust the path settings for the clFFT
+  libraries and include files. Path settings are prepared for using the binary distributions on Windows.
 
-4) Build and install the wrapper. For Python 2.7 and the free Microsoft compiler, use:
+* Build and install the wrapper. For Python 2.7 and the free Microsoft compiler, use::
 	
 	set MSSDK=1
 	set DISTUTILS_USE_SDK=1
@@ -141,11 +143,11 @@ binary libs (clFFT.dll, ...) to the package directory. In case, edit adjust the 
 Testing
 -------
 
-For some basic testing, run in the base directory of this wrapper:
+For some basic testing, run in the base directory of this wrapper::
 
 	python gpyfft/test_simple.py
 
-or for some benchmarking:
+or for some benchmarking::
 
 	python gpyfft/fft.py
 
