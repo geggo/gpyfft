@@ -56,50 +56,60 @@ missing features
    strides, need to figure out when possible)
 -  high-level interface: implement some strategy to deliver optimal performance 
    (e.g. order of transforms along axes for 2D, 3D transforms depending on memory layout)
+   
+Performance Notes
+-----------------
+
+* the memory order and axes order is important, especially for 2d or 3d batched transforms. Benchmarking with AMD GPUs (see `fft.py <gpyfft/fft.py>`_) gives you some hints. As a typical example, a batch of 4 two-dimensional transforms of size 1024x1024 is best performed with a C-contiguous input and output array of shape (4, 1024, 1024), and axes=(2,1) (argument for the gpyfft.FFT). The equivalent (same result) call with axes=(1,2) is 4-5 times slower!
+
+* for other sizes, e.g. batch of 4 1000x1000 transforms, these rule-of-thumb does not hold, so experimenting and benchmarking is necessary to achieve best performance.
 
 Requirements
 ------------
 
-- python (tested with 2.7, should work with 3.x)
-- pyopencl (>v2013.2 required)
-- distribute
-- cython
-- AMD clFFT
+- python (tested with 2.7, works also with 3.x), with packages
+  * pyopencl
+  * distribute
+  * cython
+- clFFT
 
 Building and Installation
 -------------------------
 
-1) Build and install the AMD clFFT library:
+1. Install the AMD clFFT library: either use the prebuilt `binaries <https://github.com/clMathLibraries/clFFT/releases>`_, (recommended), or build clFFT from source (see below for some hints.)
 
-   - install clFFT
-   - edit setup.py to point to clFFT directory
+2. edit `setup.py` to point to clFFT directory
 
 Then, either:
 
-2) python setup.py install
+3. `python setup.py install`
 
-or for developing
-
-3) python setup.py develop 
-
-   python setup.py build\_ext --inplace
+   or for developing
+   
+	python setup.py develop
+   	python setup.py build\_ext --inplace
+   	
    (rerun last command whenever cython extension has changed)
 
-   python setup.py develop -u #for uninstalling development version
+	python setup.py develop -u #for uninstalling development version`
 
 
 Detailed build instructions for Windows (64bit), Python 2.7
 -----------------------------------------------------------
 
-Requirements:
+Requirements
+~~~~~~~~~~~~
 
-* C/C++ Compiler. Tested with free compilers (64bit) from Microsoft Windows SDK v7.0
-* cmake (3.0)
+* C/C++ Compiler. Tested with free compilers (64bit) from Microsoft Windows SDK v7.0, or Microsoft Visual C++ Compiler Package for Python 2.7
 * OpenCL environment (tested with AMD APP SDK, 2.9)
+* cmake (3.0), only needed if clFFT is built from source
+
+How to build clFFT from source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 1) Download clFFT from github
 
-    git checkout https://github.com/clMathLibraries/clFFT.git
+	git checkout https://github.com/clMathLibraries/clFFT.git
 
 2) in `.../clFFT/src`, open SDK command shell (Start - Programs -
 Microsoft Windows SDK v7.1 - CMD Shell)
@@ -113,9 +123,19 @@ manually change `CMAKE/CMAKE_BUILD_TYPE` to `Release`
 	
 In `.../clFFT/src/staging` should contain `clFFT.dll`.
 
-3) in `gpyfft/setup.py` check that in setup.py `CLFFT_DIR` points to the clFFT folder, and
+How to build gpyfft
+~~~~~~~~~~~~~~~~~~~
+
+3) In `gpyfft/setup.py` check that in setup.py `CLFFT_DIR` points to the clFFT folder, and
 `CL_INCL_DIRS` to the OpenCL headers. Note that the setup script copies the clFFT
-binary libs (clFFT.dll, ...) to the package directory.
+binary libs (clFFT.dll, ...) to the package directory. In case, edit adjust the path settings for the clFFT libraries and include files.
+
+4) Build and install the wrapper. For Python 2.7 and the free Microsoft compiler, use:
+	
+	set MSSDK=1
+	set DISTUTILS_USE_SDK=1
+	python setup.py build
+	python setup.py install
 
 
 Testing
@@ -123,11 +143,11 @@ Testing
 
 For some basic testing, run in the base directory of this wrapper:
 
-python gpyfft/test_simple.py
+	python gpyfft/test_simple.py
 
 or for some benchmarking:
 
-python gpyfft/fft.py
+	python gpyfft/fft.py
 
 
 License:
