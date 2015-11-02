@@ -43,7 +43,7 @@ if 'Windows' in platform.system():
 
 setup(
     name = 'Gpyfft',
-    version = '0.2.1',
+    version = '0.2.2',
     description = 'A Python wrapper for the OpenCL FFT library clFFT by AMD',
     url = r"https://github.com/geggo/gpyfft",
     maintainer='Gregor Thalhammer',

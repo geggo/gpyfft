@@ -2,13 +2,14 @@
 """
 .. module:: gpyfft
    :platform: Windows, Linux
-   :synopsis: A Python wrapper for the OpenCL FFT library APPML/clAmdFft from AMD
+   :synopsis: A Python wrapper for the OpenCL FFT library clFFT
 
 .. moduleauthor:: Gregor Thalhammer
 """
 
 import cython
 import pyopencl as cl
+from libc.stdlib cimport malloc, free
 
 ctypedef long int voidptr_t
 
@@ -25,10 +26,11 @@ error_dict = {
     CLFFT_VERSION_MISMATCH: 'Version conflict between client and library.',
     CLFFT_INVALID_PLAN: 'Invalid plan.',
     CLFFT_DEVICE_NO_DOUBLE: 'Double precision not supported on this device.',
+    CLFFT_DEVICE_MISMATCH: 'Attempt to run on a device using a plan baked for a different device',
     }
 
 class GpyFFT_Error(Exception):
-    """Exception wrapper for errors returned from underlying AMD library calls"""
+    """Exception wrapper for errors returned from underlying library calls"""
     def __init__(self, errorcode):
         self.errorcode = errorcode
 
@@ -50,7 +52,7 @@ cdef inline bint errcheck(clfftStatus result) except True:
 #main class
 #TODO: need to initialize (and destroy) at module level
 cdef class GpyFFT(object):
-    """The GpyFFT object is the primary interface to the AMD FFT library"""
+    """The GpyFFT object is the primary interface to the clFFT library"""
     def __cinit__(self, debug = False):
         cdef clfftSetupData setup_data
         errcheck(clfftInitSetupData(&setup_data))
@@ -62,7 +64,7 @@ cdef class GpyFFT(object):
         errcheck(clfftTeardown())
 
     def get_version(self):
-        """returns the version of the underlying AMD FFT library
+        """returns the version of the underlying clFFT library
 
         Parameters
         ----------
@@ -71,7 +73,7 @@ cdef class GpyFFT(object):
         Returns
         -------
             out : tuple
-                the major, minor, and patch level of the AMD FFT library
+                the major, minor, and patch level of the clFFT library
 
         Raises
         ------
@@ -80,7 +82,7 @@ cdef class GpyFFT(object):
                 
         Notes
         -----
-            The underlying AMD FFT call is 'clfftCreateDefaultPlan'
+            The underlying clFFT call is 'clfftCreateDefaultPlan'
         """
 
         cdef cl_uint major, minor, patch
@@ -174,7 +176,7 @@ cdef class Plan(object):
 
         Notes
         -----
-            The underlying AMD FFT call is 'clfftCreateDefaultPlan'
+            The underlying clFFT call is 'clfftCreateDefaultPlan'
         """
     
         self.lib = lib
@@ -400,7 +402,7 @@ cdef class Plan(object):
 
         Notes
         -----
-            The underlying AMD FFT call is 'clfftBakePlan'
+            The underlying clFFT call is 'clfftBakePlan'
         """
 
         if isinstance(queues, cl.CommandQueue):
@@ -415,6 +417,67 @@ cdef class Plan(object):
         errcheck(clfftBakePlan(self.plan,
                                   n_queues, queues_,
                                   NULL, NULL))
+
+    def set_callback(self,
+                     func_name,
+                     func_string,
+                     callback_type,
+                     local_mem_size=0,
+                     user_data=None):
+        """Register callback.
+
+        Parameters
+        ----------
+        func_name: bytes
+            callback function name
+
+        func_string: bytes
+            callback function, gets inlined in OpenCL kernel
+
+        callback_type: 'pre' or 'post'
+
+        local_mem_size: int
+            size (bytes) of the local memory used by the callback
+
+        user_data:
+            pyopencl.Buffer or iterable of pyopencl.Buffer
+
+        Notes
+        -----
+            The underlying clFFT call 'clSetPlanCallback'
+
+        """
+
+        typedict = {'pre': PRECALLBACK,
+                    'post': POSTCALLBACK}
+        clfft_callback_type = typedict[callback_type]
+
+        if user_data is None:
+            user_data = ()
+            
+        if isinstance(user_data, cl.Buffer):
+            user_data = (user_data,)
+
+        n_user_data_buffers = len(user_data)
+        
+        cdef cl_mem* user_buffers = NULL
+        if n_user_data_buffers:
+            user_buffers = <cl_mem*>malloc(n_user_data_buffers*sizeof(cl_mem))
+            for n, user_data_buffer in enumerate(user_data):
+                assert isinstance(user_data_buffer, cl.Buffer)
+                user_buffers[n] = <cl_mem><voidptr_t>user_data_buffer.int_ptr
+
+        try:
+            res = clfftSetPlanCallback(self.plan,
+                                       func_name,
+                                       func_string,
+                                       local_mem_size,
+                                       clfft_callback_type,
+                                       user_buffers,
+                                       n_user_data_buffers)
+        finally:
+            free(user_buffers)
+        errcheck(res)
 
     def enqueue_transform(self, 
                          queues, 
@@ -461,7 +524,7 @@ cdef class Plan(object):
 
         Notes
         -----
-            The underlying AMD FFT call is 'clfftEnqueueTransform'
+            The underlying clFFT call is 'clfftEnqueueTransform'
         """
 
         cdef int i
@@ -531,7 +594,8 @@ cdef class Plan(object):
                                           out_buffers_,
                                           tmp_buffer_))
         
-        return tuple((cl.Event.from_cl_event_as_int(<long>out_cl_events[i]) for i in range(n_queues)))
+        #return tuple((cl.Event.from_cl_event_as_int(<long>out_cl_events[i]) for i in range(n_queues)))
+        return tuple((cl.Event.from_int_ptr(<long>out_cl_events[i]) for i in range(n_queues)))
             
         
             
