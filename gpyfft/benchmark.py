@@ -62,7 +62,7 @@ def run():
                         toc = time.clock()
                         t_ms = 1e3*(toc-tic)/n_run
                         gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
-                        print('%-10s %3s %3s %5.2fms %6.6f Gflops' % (
+                        print('%-10s %3s %3s %5.2fms %6.2f Gflops' % (
                             axes,
                             'C' if data.flags.c_contiguous else 'F',
                             'C' if result.flags.c_contiguous else 'F',
