@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import pyopencl as cl
 import pyopencl.array as cla
 import numpy as np
@@ -75,8 +77,16 @@ del plan
 del G
 
 
+print('nd_data:')
+print(nd_data)
+print('fft(nd_data):')
+print(np.fft.fftn(nd_data))
+
+del plan
+del G
 
 
+#raw_input()
 
 
 

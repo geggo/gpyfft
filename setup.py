@@ -2,7 +2,7 @@ import os, os.path, platform
 from setuptools import setup, Extension
 from Cython.Build import cythonize
 
-CLFFT_DIR = r'C:\Users\lab\Devel\clFFT'
+CLFFT_DIR = r'/Users/gregor/Devel/clFFT'
 
 CL_INCL_DIRS = []
 if 'Windows' in platform.system():
@@ -34,7 +34,7 @@ def copy_clfftdll_to_package():
     shutil.copy(
         os.path.join(CLFFT_DIR, 'src', 'staging', 'StatTimer.dll'),
         'gpyfft')
-    print "copied clFFT.dll, StatTimer.dll"
+    print("copied clFFT.dll, StatTimer.dll")
                  
 package_data = {}
 if 'Windows' in platform.system():
@@ -43,7 +43,7 @@ if 'Windows' in platform.system():
 
 setup(
     name = 'Gpyfft',
-    version = '0.2.1',
+    version = '0.2.2',
     description = 'A Python wrapper for the OpenCL FFT library clFFT by AMD',
     url = r"https://github.com/geggo/gpyfft",
     maintainer='Gregor Thalhammer',

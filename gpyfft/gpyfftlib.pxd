@@ -85,6 +85,7 @@ cdef extern from "clFFT.h":
         CLFFT_VERSION_MISMATCH
         CLFFT_INVALID_PLAN
         CLFFT_DEVICE_NO_DOUBLE
+        CLFFT_DEVICE_MISMATCH
 
     ctypedef clfftStatus_ clfftStatus
 
@@ -140,9 +141,15 @@ cdef extern from "clFFT.h":
 
     ctypedef clfftSetupData_ clfftSetupData
 
+    cdef enum clfftCallbackType_:
+        PRECALLBACK
+        POSTCALLBACK
+
+    ctypedef clfftCallbackType_ clfftCallbackType
+
     ctypedef size_t clfftPlanHandle
 
-
+    
     clfftStatus clfftInitSetupData(clfftSetupData *setupData)
     clfftStatus clfftSetup(const clfftSetupData *setupData)
     clfftStatus clfftTeardown()
@@ -185,6 +192,13 @@ cdef extern from "clFFT.h":
     clfftStatus clfftGetPlanTransposeResult(const clfftPlanHandle plHandle, clfftResultTransposed *transposed)
     clfftStatus clfftSetPlanTransposeResult(clfftPlanHandle plHandle, clfftResultTransposed transposed)
     clfftStatus clfftGetTmpBufSize(const clfftPlanHandle plHandle, size_t *buffersize)
+    clfftStatus clfftSetPlanCallback(clfftPlanHandle plHandle,
+                                     const char* funcName,
+                                     const char* funcString,
+                                     int localMemSize,
+                                     clfftCallbackType callbackType,
+                                     cl_mem *userdata,
+                                     int numUserdataBuffers)
     clfftStatus clfftEnqueueTransform(clfftPlanHandle plHandle,
                                       clfftDirection dir, 
                                       cl_uint numQueuesAndEvents, 
@@ -196,5 +210,5 @@ cdef extern from "clFFT.h":
                                       cl_mem *outputBuffers, 
                                       cl_mem tmpBuffer
                                       )
-
+    
 

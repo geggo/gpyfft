@@ -1,0 +1,4 @@
+include README.rst
+include MANIFEST.in
+include gpyfft/gpyfftlib.pxd
+include gpyfft/gpyfftlib.pyx
