@@ -1,7 +1,7 @@
-import gpyfft
-GFFT = gpyfft.GpyFFT(debug=False)
-import time
-import numpy as np
+from __future__ import absolute_import, division, print_function
+from .gpyfftlib import GpyFFT
+import pyopencl as cl
+GFFT = GpyFFT(debug=False)
 
 import pyopencl as cl
 
@@ -38,11 +38,11 @@ class FFT(object):
         plan.strides_out = t_strides_out
         plan.distances = (t_distance_in, t_distance_out)
         plan.batch_size = t_batchsize_in #assert t_batchsize_in == t_batchsize_out
-        
+
         if False:
             print('axes', axes        )
             print('in_array.shape:          ', in_array.shape)
-            print('in_array.strides/itemsize', tuple(s/in_array.dtype.itemsize for s in in_array.strides))
+            print('in_array.strides/itemsize', tuple(s // in_array.dtype.itemsize for s in in_array.strides))
             print('shape transform          ', t_shape)
             print('t_strides                ', t_strides_in)
             print('distance_in              ', t_distance_in)
@@ -65,7 +65,7 @@ class FFT(object):
 
     def calculate_transform_strides(self,
                                     axes,
-                                    shape, 
+                                    shape,
                                     strides,
                                     dtype,
                                    ):
@@ -75,7 +75,7 @@ class FFT(object):
 
         tdim = len(axes) #dimensionality transform
         assert tdim <= ddim
-        
+
         axes_transform = tuple(a + ddim if a<0 else a for a in axes)
 
         axes_notransform = set(range(ddim)).difference(axes_transform)
@@ -85,13 +85,13 @@ class FFT(object):
         t_shape = [shape[i] for i in axes_transform]
         dsize = dtype.itemsize
         t_strides = [strides[i]//dsize for i in axes_transform]
-        
+
         t_distance = [strides[i]//dsize for i in axes_notransform]
         if not t_distance:
             t_distance = 0
         else:
             t_distance = t_distance[0] #TODO
-    
+
         batchsize = 1
         for a in axes_notransform:
             batchsize *= shape[a]
@@ -108,113 +108,5 @@ class FFT(object):
                                         direction_forward = forward, temp_buffer = self.temp_buffer)
         return events
 
-    def update_arrays(input_array, output_array):
+    def update_arrays(self, input_array, output_array):
         pass
-
-#complex transform: 2x input_arrays real or 1x input_array, same output
-#real to complex: (forward) out_array.shape[axes][-1] = in_array.shape[axes][-1]//2 + 1
-
-if __name__ == '__main__':
-
-    import numpy as np
-    from numpy.fft import fftn as npfftn
-    from numpy.testing import assert_array_almost_equal
-    import pyopencl as cl
-    import pyopencl.array as cla
-
-    context = cl.create_some_context()
-    queue = cl.CommandQueue(context)
-
-    n_run = 10 #set to 1 for proper testing
-
-    if n_run > 1:
-        #nd_dataC = np.zeros((1024, 1024), dtype = np.complex64) #for benchmark
-        nd_dataC = np.zeros((4,1024, 1024), dtype = np.complex64) #for benchmark
-        #nd_dataC = np.zeros((128,128,128), dtype = np.complex64) #for benchmark
-    else:
-        nd_dataC = np.ones((4,1024, 1024), dtype = np.complex64) #set n_run to 1
-
-    #nd_dataC = np.array([[1,2,3,4], [5,6,7,8]], dtype = np.complex64) #small array
-
-    nd_dataF = np.asfortranarray(nd_dataC)
-    dataC = cla.to_device(queue, nd_dataC)
-    dataF = cla.to_device(queue, nd_dataF)
-
-    nd_result = np.zeros_like(nd_dataC, dtype = np.complex64)
-    resultC = cla.to_device(queue, nd_result)
-    resultF = cla.to_device(queue, np.asfortranarray(nd_result))
-    result = resultF
-
-
-    #axes_list = [(0,), (1,), (0,1)] #is (1,0) the same?
-    #axes_list = [(1,0), (0,1), (1,2), (2,1)]
-    #axes_list = [(1,2), (2,1)]
-    axes_list = [(1,0), (0,1), (1,2), (2,1), (0,1,2), (2,1,0)]
-
-    if True:
-        print('out of place transforms', dataC.shape)
-        print('axes         in out')
-        for axes in axes_list:
-            for data in (dataC, dataF):
-                for result in (resultC, resultF):
-                    try:
-
-                        transform = FFT(context, queue, (data,), (result,), axes = axes)
-                        #transform.plan.transpose_result = True #not implemented for some transforms (works e.g. for out of place, (2,1) C C)
-                        tic = time.clock()
-                        for i in range(n_run):
-                            events = transform.enqueue()
-                            #events = transform.enqueue(False)
-                        for e in events:
-                            e.wait()
-                        toc = time.clock()
-                        t_ms = 1e3*(toc-tic)/n_run
-                        gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
-                        print('%-10s %3s %3s %5.2fms %4d Gflops'%(
-                            axes,
-                            'C' if data.flags.c_contiguous else 'F',  
-                            'C' if result.flags.c_contiguous else 'F',  
-                            t_ms, gflops
-                            ))
-                        assert_array_almost_equal(result.get(), npfftn(data.get(), axes = axes))
-                    except gpyfft.GpyFFT_Error as e:
-                        print(e)
-                    except AssertionError as e:
-                        print(e)
-
-        print()
-        print('in place transforms', nd_dataC.shape)
-
-    for axes in axes_list:
-        for nd_data in (nd_dataC, nd_dataF):
-            data = cla.to_device(queue, nd_data)
-            transform = FFT(context, queue, (data,), axes = axes)
-            #transform.plan.transpose_result = True #not implemented
-            tic = time.clock()
-            for i in range(n_run): #inplace transform fails for n_run > 1
-                events = transform.enqueue()
-            for e in events:
-                    e.wait()
-            toc = time.clock()
-            t_ms = 1e3*(toc-tic)/n_run
-            gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
-            print('%-10s %3s %5.2fms %4d Gflops'%(
-                axes,
-                'C' if data.flags.c_contiguous else 'F',
-                t_ms, gflops
-                ))
-            #assert_array_almost_equal(data.get(queue=queue), npfftn(nd_data, axes = axes)) #never fails ????
-
-
-
-    # #################
-    # #check for block-contiguous -> axis can be collapsed
-
-    # b = arange(24)
-    # b.shape = (2,3,4)
-
-    # #transform along last axis
-    # a[:,:,0] #indices of individual transform subarrays
-    # a[:,0,:]
-
-    # #nditer, nested_iters,

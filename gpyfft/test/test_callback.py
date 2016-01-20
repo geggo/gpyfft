@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import pyopencl as cl
 import pyopencl.array as cla
 import numpy as np
@@ -49,6 +51,25 @@ plan.scale_forward = 1
 print('plan.scale_forward:', plan.scale_forward)
 
 print('plan.transpose_result:', plan.transpose_result)
+
+callback_kernel = """
+float2 mulval(__global void* in,
+              uint inoffset,
+              __global void* userdata
+              //__local void* localmem
+)
+{
+float scalar = *((__global float*)userdata + inoffset);
+float2 ret = *((__global float2*)in + inoffset) * scalar;
+return ret;
+}
+"""
+
+user_data = np.array([[1,2,3,4], [5,6,7,8]], dtype = np.float32)
+user_data_device = cla.to_device(queue, user_data)
+
+plan.set_callback('mulval', callback_kernel, 'pre',
+                       user_data = user_data_device.data)
 
 plan.bake(queue)
 print('plan.temp_array_size:', plan.temp_array_size)
