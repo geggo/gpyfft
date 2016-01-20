@@ -3,6 +3,8 @@ GFFT = gpyfft.GpyFFT(debug=False)
 import time
 import numpy as np
 
+import pyopencl as cl
+
 # TODO:
 # real to complex: out-of-place
 # planar, interleaved arrays
