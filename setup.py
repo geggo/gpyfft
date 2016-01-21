@@ -16,16 +16,16 @@ Cython.Compiler.Options.generate_cleanup_code = 2
 
 cmdclass = {}
 PROJECT = "gpyfft"
-#TODO: see https://github.com/matthew-brett/du-cy-numpy
+# TODO: see https://github.com/matthew-brett/du-cy-numpy
 
 extensions = [
     Extension("gpyfft.gpyfftlib",
               [os.path.join('gpyfft', 'gpyfftlib.pyx')],
-              include_dirs = [os.path.join(CLFFT_DIR,'src', 'include'),] + CL_INCL_DIRS,
-              extra_compile_args = [],
-              extra_link_args = [],
-              libraries = ['clFFT'],
-              library_dirs = [os.path.join(CLFFT_DIR, 'src', 'library'),],
+              include_dirs=[os.path.join(CLFFT_DIR, 'src', 'include'), ] + CL_INCL_DIRS,
+              extra_compile_args=[],
+              extra_link_args=[],
+              libraries=['clFFT'],
+              library_dirs=[os.path.join(CLFFT_DIR, 'src', 'library'), ],
               )
     ]
 
@@ -81,15 +81,15 @@ setup_requires = ["numpy", "cython"]
 
 
 setup(
-    name = 'gpyfft',
+    name='gpyfft',
     version=get_version(),
-    description = 'A Python wrapper for the OpenCL FFT library clFFT by AMD',
-    url = r"https://github.com/geggo/gpyfft",
+    description='A Python wrapper for the OpenCL FFT library clFFT by AMD',
+    url=r"https://github.com/geggo/gpyfft",
     maintainer='Gregor Thalhammer',
-    maintainer_email = 'gregor.thalhammer@gmail.com',
-    license = 'LGPL',
-    packages = ['gpyfft'],
-    ext_modules = cythonize(extensions),
+    maintainer_email='gregor.thalhammer@gmail.com',
+    license='LGPL',
+    packages=['gpyfft', "gpyfft.test"],
+    ext_modules=cythonize(extensions),
     package_data=package_data,
     long_description=get_readme(),
     install_requires=install_requires,

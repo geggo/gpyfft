@@ -1,5 +1,6 @@
 from __future__ import absolute_import
-
+import logging
+logging.basicConfig()
 try:
     from ._version import __date__ as date
     from ._version import version, version_info, hexversion, strictversion
