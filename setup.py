@@ -81,7 +81,7 @@ setup_requires = ["numpy", "cython"]
 
 
 setup(
-    name = 'Gpyfft',
+    name = 'gpyfft',
     version=get_version(),
     description = 'A Python wrapper for the OpenCL FFT library clFFT by AMD',
     url = r"https://github.com/geggo/gpyfft",
