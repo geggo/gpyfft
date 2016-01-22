@@ -160,13 +160,20 @@ Tested Platforms
 ----------------
 
 This wrapper has been tested with Python 2.7 both on Windows 7 (64bit) with AMD Radeon
-6950, and OS X 10.7, 10.9 and 10.10 with Nvidia GT330M. Should also
-work with Python 3, thanks to contribution by Nevada Sanchez.
+6950 and 285, and OS X 10.7-10.11 with Nvidia GT330M, GT750M, and Intel Iris Pro. 
+Should also work with Python 3, thanks to contribution by Nevada Sanchez.
 
 Tested on Linux debian-8 with Intel, AMD and POCL drivers on CPU, Beignet and Nvidia drivers on GPU.
 
 Success reports for more recent systems are welcome!
 
+Contributors
+------------
+
+Keith Brafford
+Jerome Kieffer
+Nevada Sanchez
+Gregor Thalhammer
+
 
 (C) Gregor Thalhammer 2015
-
