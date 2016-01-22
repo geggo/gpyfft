@@ -170,10 +170,9 @@ Success reports for more recent systems are welcome!
 Contributors
 ------------
 
-Keith Brafford
-Jerome Kieffer
-Nevada Sanchez
-Gregor Thalhammer
-
+* Gregor Thalhammer
+* Keith Brafford
+* Nevada Sanchez
+* Jerome Kieffer
 
 (C) Gregor Thalhammer 2015
