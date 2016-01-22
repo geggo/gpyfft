@@ -88,12 +88,7 @@ Then, either:
 
    or for developing::
    
-        python setup.py develop
-        python setup.py build\_ext --inplace
-   	
-   (rerun last command whenever cython extension has changed). To uninstall develop version::
-
-	python setup.py develop -u #for uninstalling development version`
+        python bootstrap.py
 
 
 Detailed build instructions for Windows (64bit), Python 2.7
@@ -145,11 +140,15 @@ Testing
 
 For some basic testing, run in the base directory of this wrapper::
 
-	python gpyfft/test_simple.py
+	python bootstrap.py 
+   import gpyfft.test
+   gpyfft.test.run()
 
 or for some benchmarking::
 
-	python gpyfft/fft.py
+	python bootstrap.py
+   import gpyfft.benchmark 
+   gpyfft.benchmark.run()
 
 
 License:
@@ -163,6 +162,8 @@ Tested Platforms
 This wrapper has been tested with Python 2.7 both on Windows 7 (64bit) with AMD Radeon
 6950, and OS X 10.7, 10.9 and 10.10 with Nvidia GT330M. Should also
 work with Python 3, thanks to contribution by Nevada Sanchez.
+
+Tested on Linux debian-8 with Intel, AMD and POCL drivers on CPU, Beignet and Nvidia drivers on GPU.
 
 Success reports for more recent systems are welcome!
 
