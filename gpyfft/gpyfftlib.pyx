@@ -325,6 +325,19 @@ cdef class Plan(object):
             assert len(distances) == 2
             errcheck(clfftSetPlanDistance(self.plan, distances[0], distances[1]))
 
+    # set layout by string
+    _map_layouts = {
+        'COMPLEX_INTERLEAVED': CLFFT_COMPLEX_INTERLEAVED,
+        'COMPLEX_PLANAR': CLFFT_COMPLEX_PLANAR,
+        'HERMITIAN_INTERLEAVED': CLFFT_HERMITIAN_INTERLEAVED,
+        'HERMITIAN_PLANAR': CLFFT_HERMITIAN_PLANAR,
+        'REAL': CLFFT_REAL,
+        }
+    _enum_layouts = ( CLFFT_COMPLEX_INTERLEAVED,
+                      CLFFT_COMPLEX_PLANAR,
+                      CLFFT_HERMITIAN_INTERLEAVED,
+                      CLFFT_HERMITIAN_PLANAR,
+                      CLFFT_REAL )
     property layouts:
         """the expected layout of the output buffers"""        
         def __get__(self):
@@ -333,6 +346,10 @@ cdef class Plan(object):
             return (layout_in, layout_out)
         def __set__(self, tuple layouts):
             assert len(layouts) == 2
+            if layouts[0] not in self._enum_layouts:
+                layouts[0] = self._map_layouts[layouts[0]]
+            if layouts[1] not in self._enum_layouts:
+                layouts[1] = self._map_layouts[layouts[1]]
             errcheck(clfftSetLayout(self.plan, layouts[0], layouts[1]))
         
     property inplace:
