@@ -346,10 +346,12 @@ cdef class Plan(object):
             return (layout_in, layout_out)
         def __set__(self, tuple layouts):
             assert len(layouts) == 2
-            if layouts[0] not in self._enum_layouts:
-                layouts[0] = self._map_layouts[layouts[0]]
-            if layouts[1] not in self._enum_layouts:
-                layouts[1] = self._map_layouts[layouts[1]]
+            layout0 = layouts[0]
+            layout1 = layouts[1]
+            if layout0 not in self._enum_layouts:
+                layout0 = self._map_layouts[layout0]
+            if layout1 not in self._enum_layouts:
+                layout1 = self._map_layouts[layout1]
             errcheck(clfftSetLayout(self.plan, layouts[0], layouts[1]))
         
     property inplace:
