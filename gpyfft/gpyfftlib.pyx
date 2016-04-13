@@ -352,7 +352,7 @@ cdef class Plan(object):
                 layout0 = self._map_layouts[layout0]
             if layout1 not in self._enum_layouts:
                 layout1 = self._map_layouts[layout1]
-            errcheck(clfftSetLayout(self.plan, layouts[0], layouts[1]))
+            errcheck(clfftSetLayout(self.plan, layout0, layout1))
         
     property inplace:
         """determines if the input buffers are going to be overwritten with 
