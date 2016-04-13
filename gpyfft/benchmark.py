@@ -1,5 +1,5 @@
 from __future__ import absolute_import, division, print_function
-import time
+import timeit
 import numpy as np
 from numpy.fft import fftn as npfftn
 from numpy.testing import assert_array_almost_equal
@@ -53,13 +53,13 @@ def run():
 
                         transform = FFT(context, queue, (data,), (result,), axes = axes)
                         #transform.plan.transpose_result = True #not implemented for some transforms (works e.g. for out of place, (2,1) C C)
-                        tic = time.clock()
+                        tic = timeit.default_timer()
                         for i in range(n_run):
                             events = transform.enqueue()
                             #events = transform.enqueue(False)
                         for e in events:
                             e.wait()
-                        toc = time.clock()
+                        toc = timeit.default_timer()
                         t_ms = 1e3*(toc-tic)/n_run
                         gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
                         print('%-10s %3s %3s %5.2fms %6.2f Gflops' % (
@@ -82,12 +82,12 @@ def run():
             data = cla.to_device(queue, nd_data)
             transform = FFT(context, queue, (data,), axes = axes)
             #transform.plan.transpose_result = True #not implemented
-            tic = time.clock()
+            tic = timeit.default_timer()
             for i in range(n_run):  # inplace transform fails for n_run > 1
                 events = transform.enqueue()
             for e in events:
                     e.wait()
-            toc = time.clock()
+            toc = timeit.default_timer()
             t_ms = 1e3*(toc-tic)/n_run
             gflops = 5e-9 * np.log2(np.prod(transform.t_shape))*np.prod(transform.t_shape) * transform.batchsize / (1e-3*t_ms)
             print('%-10s %3s %5.2fms %6.2f Gflops' % (
