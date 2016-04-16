@@ -325,6 +325,19 @@ cdef class Plan(object):
             assert len(distances) == 2
             errcheck(clfftSetPlanDistance(self.plan, distances[0], distances[1]))
 
+    # set layout by string
+    _map_layouts = {
+        'COMPLEX_INTERLEAVED': CLFFT_COMPLEX_INTERLEAVED,
+        'COMPLEX_PLANAR': CLFFT_COMPLEX_PLANAR,
+        'HERMITIAN_INTERLEAVED': CLFFT_HERMITIAN_INTERLEAVED,
+        'HERMITIAN_PLANAR': CLFFT_HERMITIAN_PLANAR,
+        'REAL': CLFFT_REAL,
+        }
+    _enum_layouts = ( CLFFT_COMPLEX_INTERLEAVED,
+                      CLFFT_COMPLEX_PLANAR,
+                      CLFFT_HERMITIAN_INTERLEAVED,
+                      CLFFT_HERMITIAN_PLANAR,
+                      CLFFT_REAL )
     property layouts:
         """the expected layout of the output buffers"""        
         def __get__(self):
@@ -333,7 +346,13 @@ cdef class Plan(object):
             return (layout_in, layout_out)
         def __set__(self, tuple layouts):
             assert len(layouts) == 2
-            errcheck(clfftSetLayout(self.plan, layouts[0], layouts[1]))
+            layout0 = layouts[0]
+            layout1 = layouts[1]
+            if layout0 not in self._enum_layouts:
+                layout0 = self._map_layouts[layout0]
+            if layout1 not in self._enum_layouts:
+                layout1 = self._map_layouts[layout1]
+            errcheck(clfftSetLayout(self.plan, layout0, layout1))
         
     property inplace:
         """determines if the input buffers are going to be overwritten with 
@@ -483,6 +502,8 @@ cdef class Plan(object):
                          queues, 
                          in_buffers, 
                          out_buffers = None,
+			 in_offsets = None,
+			 out_offsets = None,
                          direction_forward = True, 
                          wait_for_events = None, 
                          temp_buffer = None,
@@ -547,7 +568,7 @@ cdef class Plan(object):
         cdef cl_event wait_for_events_array[MAX_WAITFOR_EVENTS]
         cdef cl_event* wait_for_events_ = NULL
         cdef n_waitfor_events = 0
-        if wait_for_events is not None:
+        if wait_for_events is not None and len(wait_for_events) > 0:
             n_waitfor_events = len(wait_for_events)
             assert n_waitfor_events <= MAX_WAITFOR_EVENTS
             for i, event in enumerate(wait_for_events):
@@ -555,30 +576,65 @@ cdef class Plan(object):
                 wait_for_events_array[i] = <cl_event><voidptr_t>event.int_ptr
             wait_for_events_ = &wait_for_events_array[0]
 
+        cdef _cl_buffer_region subbufregion
+        cdef cl_ulong subbufflags
+        cdef size_t subbufsize
+        cdef cl_int subbuferror
+        cdef cl_int errval
+
         cdef cl_mem in_buffers_[2]
-        if isinstance(in_buffers, cl.Buffer):
+        if isinstance(in_buffers, cl.MemoryObjectHolder):
             in_buffers = (in_buffers,)
         n_in_buffers = len(in_buffers)
         assert n_in_buffers <= 2
+        if in_offsets is not None:
+            assert n_in_buffers == len(in_offsets)
         for i, in_buffer in enumerate(in_buffers):
-            assert isinstance(in_buffer, cl.Buffer)
+            assert isinstance(in_buffer, cl.MemoryObjectHolder)
             in_buffers_[i] = <cl_mem><voidptr_t>in_buffer.int_ptr
+            if in_offsets is not None:
+                errval = clGetMemObjectInfo(in_buffers_[i], CL_MEM_FLAGS, sizeof(subbufflags), &subbufflags, NULL)
+                if errval != CL_SUCCESS:
+                    raise Exception("Error (%d) getting memory object info CL_MEM_FLAGS!" % (errval,))
+                errval = clGetMemObjectInfo(in_buffers_[i], CL_MEM_SIZE, sizeof(subbufsize), &subbufsize, NULL)
+                if errval != CL_SUCCESS:
+                    raise Exception("Error (%d) getting memory object info CL_MEM_SIZE!" % (errval,))
+                subbufregion.origin = in_offsets[i]
+                subbufregion.size = subbufsize - subbufregion.origin
+                in_buffers_[i] = clCreateSubBuffer(in_buffers_[i], subbufflags, CL_BUFFER_CREATE_TYPE_REGION, &subbufregion, &subbuferror)
+                if subbuferror != CL_SUCCESS:
+                    raise Exception("Got error! %d (subbufregion origin=%ld size=%ld)" % (subbuferror, <long>subbufregion.origin, <long>subbufregion.size))
+                
 
         cdef cl_mem out_buffers_array[2]
         cdef cl_mem* out_buffers_ = NULL
         if out_buffers is not None:
-            if isinstance(out_buffers, cl.Buffer):
+            if isinstance(out_buffers, cl.MemoryObjectHolder):
                 out_buffers = (out_buffers,)
             n_out_buffers = len(out_buffers)
             assert n_out_buffers in (1,2)
+            if out_offsets is not None:
+                assert n_out_buffers == len(out_offsets)
             for i, out_buffer in enumerate(out_buffers):
-                assert isinstance(out_buffer, cl.Buffer)
+                assert isinstance(out_buffer, cl.MemoryObjectHolder)
                 out_buffers_array[i] = <cl_mem><voidptr_t>out_buffer.int_ptr
+                if out_offsets is not None:
+                    errval = clGetMemObjectInfo(out_buffers_array[i], CL_MEM_FLAGS, sizeof(subbufflags), &subbufflags, NULL)
+                    if errval != CL_SUCCESS:
+                        raise Exception("Error (%d) getting memory object info CL_MEM_FLAGS!" % (errval,))
+                    errval = clGetMemObjectInfo(out_buffers_array[i], CL_MEM_SIZE, sizeof(subbufsize), &subbufsize, NULL)
+                    if errval != CL_SUCCESS:
+                        raise Exception("Error (%d) getting memory object info CL_MEM_SIZE!" % (errval,))
+                    subbufregion.origin = out_offsets[i]
+                    subbufregion.size = subbufsize - subbufregion.origin
+                    out_buffers_array[i] = clCreateSubBuffer(out_buffers_array[i], subbufflags, CL_BUFFER_CREATE_TYPE_REGION, &subbufregion, &subbuferror)
+                    if subbuferror != CL_SUCCESS:
+                        raise Exception("Got error! %d (subbufregion origin=%ld size=%ld)" % (subbuferror, <long>subbufregion.origin, <long>subbufregion.size))
             out_buffers_ = &out_buffers_array[0]
 
         cdef cl_mem tmp_buffer_ = NULL
         if temp_buffer is not None:
-            assert isinstance(temp_buffer, cl.Buffer)
+            assert isinstance(temp_buffer, cl.MemoryObjectHolder)
             tmp_buffer_ = <cl_mem><voidptr_t>temp_buffer.int_ptr
 
         cdef cl_event out_cl_events[MAX_QUEUES]
@@ -594,8 +650,15 @@ cdef class Plan(object):
                                           out_buffers_,
                                           tmp_buffer_))
         
+        if in_offsets is not None:
+            for i in range(n_in_buffers):
+                clReleaseMemObject(in_buffers_[i])
+        if out_offsets is not None:
+            for i in range(n_out_buffers):
+                clReleaseMemObject(out_buffers_[i])
+
         #return tuple((cl.Event.from_cl_event_as_int(<long>out_cl_events[i]) for i in range(n_queues)))
-        return tuple((cl.Event.from_int_ptr(<long>out_cl_events[i]) for i in range(n_queues)))
+        return tuple((cl.Event.from_int_ptr(<long>out_cl_events[i], retain=False) for i in range(n_queues)))
             
         
             
