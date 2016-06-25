@@ -69,7 +69,7 @@ Requirements
 
 - python (tested with 2.7, works also with 3.x), with packages
 
-  * pyopencl
+  * pyopencl (>=2016.1)
   * distribute
   * cython
 
@@ -174,5 +174,6 @@ Contributors
 * Keith Brafford
 * Nevada Sanchez
 * Jerome Kieffer
+* Syam Gadde
 
 (C) Gregor Thalhammer 2015
