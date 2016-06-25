@@ -595,7 +595,7 @@ cdef class Plan(object):
                                           tmp_buffer_))
         
         #return tuple((cl.Event.from_cl_event_as_int(<long>out_cl_events[i]) for i in range(n_queues)))
-        return tuple((cl.Event.from_int_ptr(<long>out_cl_events[i]) for i in range(n_queues)))
+        return tuple((cl.Event.from_int_ptr(<long>out_cl_events[i], retain=False) for i in range(n_queues)))
             
         
             
