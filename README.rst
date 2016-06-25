@@ -174,6 +174,7 @@ Contributors
 * Keith Brafford
 * Nevada Sanchez
 * Jerome Kieffer
+* Christophe Meyer
 * Syam Gadde
 
 (C) Gregor Thalhammer 2015
