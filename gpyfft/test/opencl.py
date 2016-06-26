@@ -17,7 +17,8 @@ logger = logging.getLogger(os.path.basename(__file__))
 
 ALL_DEVICES = []
 for platform in cl.get_platforms():
-    ALL_DEVICES += platform.get_devices()
+    #ALL_DEVICES += platform.get_devices()
+    ALL_DEVICES += platform.get_devices(device_type = cl.device_type.GPU)
 
 
 def get_contexts():
