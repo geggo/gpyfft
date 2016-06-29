@@ -29,7 +29,7 @@ cdef extern from "clFFT.h":
     enum:
         CLFFT_DUMP_PROGRAMS ##define constant
 
-    cdef enum clfftStatus_:
+    cpdef enum clfftStatus_:
         CLFFT_INVALID_GLOBAL_WORK_SIZE
         CLFFT_INVALID_MIP_LEVEL
         CLFFT_INVALID_BUFFER_SIZE
@@ -89,14 +89,14 @@ cdef extern from "clFFT.h":
 
     ctypedef clfftStatus_ clfftStatus
 
-    cdef enum clfftDim_:
+    cpdef enum clfftDim_:
         CLFFT_1D
         CLFFT_2D
         CLFFT_3D
 
     ctypedef clfftDim_ clfftDim
 
-    cdef enum clfftLayout_:
+    cpdef enum clfftLayout_:
         CLFFT_COMPLEX_INTERLEAVED
         CLFFT_COMPLEX_PLANAR
         CLFFT_HERMITIAN_INTERLEAVED
@@ -105,7 +105,7 @@ cdef extern from "clFFT.h":
 
     ctypedef clfftLayout_ clfftLayout
 
-    cdef enum clfftPrecision_:
+    cpdef enum clfftPrecision_:
         CLFFT_SINGLE
         CLFFT_DOUBLE
         CLFFT_SINGLE_FAST
@@ -113,7 +113,7 @@ cdef extern from "clFFT.h":
 
     ctypedef clfftPrecision_ clfftPrecision
 
-    cdef enum clfftDirection_:
+    cpdef enum clfftDirection_:
         CLFFT_FORWARD
         CLFFT_BACKWARD
         CLFFT_MINUS
@@ -121,13 +121,13 @@ cdef extern from "clFFT.h":
 
     ctypedef clfftDirection_ clfftDirection
 
-    cdef enum clfftResultLocation_:
+    cpdef enum clfftResultLocation_:
         CLFFT_INPLACE
         CLFFT_OUTOFPLACE
 
     ctypedef clfftResultLocation_ clfftResultLocation
 
-    cdef enum clfftResultTransposed_:
+    cpdef enum clfftResultTransposed_:
         CLFFT_NOTRANSPOSE
         CLFFT_TRANSPOSED
 
@@ -141,7 +141,7 @@ cdef extern from "clFFT.h":
 
     ctypedef clfftSetupData_ clfftSetupData
 
-    cdef enum clfftCallbackType_:
+    cpdef enum clfftCallbackType_:
         PRECALLBACK
         POSTCALLBACK
 
