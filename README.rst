@@ -43,23 +43,23 @@ imports:
 
 .. code-block:: python
 
-        import numpy as np
-        import pyopencl as cl
+	import numpy as np
+	import pyopencl as cl
 	import pyopencl.array as cla
 	from gpyfft.fft import FFT
 
 initialize GPU:
-  
+
 .. code-block:: python
 
-        context = cl.create_some_context()
+	context = cl.create_some_context()
 	queue = cl.CommandQueue(context)
-	
+
 initialize memory (on host and GPU). In this example we want to perform in parallel four 2D FFTs for 1024x1024 single precision data.
 
 .. code-block:: python
 
-        data_host = np.zeros((4, 1024, 1024), dtype = np.complex64)
+	data_host = np.zeros((4, 1024, 1024), dtype = np.complex64)
 	#data_host[:] = some_useful_data
 	data_gpu = cla.to_device(queue, data_host)
 
@@ -67,7 +67,7 @@ create FFT transform plan for batched inline 2D transform along second two axes.
 
 .. code-block:: python
 
-         transform = FFT(context, queue, (data_gpu,), axes = (2, 1))
+	transform = FFT(context, queue, (data_gpu,), axes = (2, 1))
 
 If you want an out-of-place transform, provide the output array as additional argument after the input data.
 
@@ -75,14 +75,14 @@ Start the work and wait until it is finished (Note that enqueu() returns a tuple
 
 .. code-block:: python
 
-         event, = transform.enqueue()
-	 event.wait()
+	event, = transform.enqueue()
+	event.wait()
 
 Read back the data from the GPU to the host
 
 .. code-block:: python
 
-        result_host = data_gpu.get()
+	result_host = data_gpu.get()
 
 work done
 ~~~~~~~~~
@@ -105,9 +105,9 @@ missing features
    (4,5,6), axes = (1,), i.e., more than one axes where no transform is
    performed. (not always possible with single call for arbitrary
    strides, need to figure out when possible)
--  high-level interface: implement some strategy to deliver optimal performance 
+-  high-level interface: implement some strategy to deliver optimal performance
    (e.g. order of transforms along axes for 2D, 3D transforms depending on memory layout)
-   
+
 Performance Notes
 -----------------
 
@@ -138,7 +138,7 @@ Then, either:
 3. `python setup.py install`
 
    or for developing::
-   
+
         python bootstrap.py
 
 
@@ -164,10 +164,10 @@ How to build clFFT from source
 	setenv /Release
 	cmake -G "NMake Makefile"
 	nmake
-	
+
   or use `cmake-gui`, with source code `.../clFFT/src`, build dir `.../clFFT/src`,
   manually change `CMAKE/CMAKE_BUILD_TYPE` to `Release`
-	
+
   In `.../clFFT/src/staging` should contain `clFFT.dll`.
 
 How to build gpyfft
@@ -179,7 +179,7 @@ How to build gpyfft
   libraries and include files. Path settings are prepared for using the binary distributions on Windows.
 
 * Build and install the wrapper. For Python 2.7 and the free Microsoft compiler, use::
-	
+
 	set MSSDK=1
 	set DISTUTILS_USE_SDK=1
 	python setup.py build
@@ -191,15 +191,15 @@ Testing
 
 For some basic testing, run in the base directory of this wrapper::
 
-   python bootstrap.py 
-   import gpyfft.test
-   gpyfft.test.run()
+	python bootstrap.py
+	import gpyfft.test
+	gpyfft.test.run()
 
 or for some benchmarking::
 
-   python bootstrap.py
-   import gpyfft.benchmark 
-   gpyfft.benchmark.run()
+	python bootstrap.py
+	import gpyfft.benchmark
+	gpyfft.benchmark.run()
 
 
 License:
@@ -211,7 +211,7 @@ Tested Platforms
 ----------------
 
 This wrapper has been tested with Python 2.7 both on Windows 7 (64bit) with AMD Radeon
-6950 and 285, and OS X 10.7-10.11 with Nvidia GT330M, GT750M, and Intel Iris Pro. 
+6950 and 285, and OS X 10.7-10.11 with Nvidia GT330M, GT750M, and Intel Iris Pro.
 Should also work with Python 3, thanks to contribution by Nevada Sanchez.
 
 Tested on Linux debian-8 with Intel, AMD and POCL drivers on CPU, Beignet and Nvidia drivers on GPU.
