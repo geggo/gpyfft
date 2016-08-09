@@ -35,7 +35,7 @@ This wrapper is functional, the high-level interface is not completely settled.
 
 
 Basic usage
----------
+-----------
 
 Here we describe a simple example of performing a batch of 2D complex-to-complex FFT transforms on the GPU, using the high-level interface of gpyfft. The full source code of this example ist contained in `simple_example.py <examples/simple_example.py>`_, which is the essence of `benchmark.py <gpyfft/benchmark.py>`_
 
@@ -183,13 +183,13 @@ Testing
 
 For some basic testing, run in the base directory of this wrapper::
 
-	python bootstrap.py 
+   python bootstrap.py 
    import gpyfft.test
    gpyfft.test.run()
 
 or for some benchmarking::
 
-	python bootstrap.py
+   python bootstrap.py
    import gpyfft.benchmark 
    gpyfft.benchmark.run()
 
