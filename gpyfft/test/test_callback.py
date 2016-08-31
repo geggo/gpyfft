@@ -19,7 +19,7 @@ from .opencl import get_contexts
 
 
 class TestCallback(unittest.TestCase):
-    callback_kernel = """
+    callback_kernel = b"""
 float2 mulval(__global void* in,
               uint inoffset,
               __global void* userdata
@@ -87,7 +87,7 @@ return ret;
         user_data = np.array([[1, 2, 3, 4], [5, 6, 7, 8]], dtype=np.float32)
         user_data_device = cla.to_device(queue, user_data)
 
-        plan.set_callback('mulval', self.callback_kernel, 'pre',
+        plan.set_callback(b'mulval', self.callback_kernel, 'pre',
                                user_data=user_data_device.data)
 
         plan.bake(queue)
