@@ -12,9 +12,9 @@ import pyopencl as cl
 from libc.stdlib cimport malloc, free
 
 #ctypedef long int voidptr_t
-ctypedef long long int voidptr_t
+#ctypedef long long int voidptr_t
 #from libc.stdint cimport uintptr_t
-#ctypedef size_t voidptr_t
+ctypedef size_t voidptr_t
 
 DEF MAX_QUEUES = 5
 DEF MAX_WAITFOR_EVENTS = 10
@@ -598,7 +598,8 @@ cdef class Plan(object):
                                           tmp_buffer_))
         
         #return tuple((cl.Event.from_cl_event_as_int(<long>out_cl_events[i]) for i in range(n_queues)))
-        return tuple((cl.Event.from_int_ptr(<long long>out_cl_events[i], retain=False) for i in range(n_queues)))
+        #return tuple((cl.Event.from_int_ptr(<long long>out_cl_events[i], retain=False) for i in range(n_queues)))
+        return tuple((cl.Event.from_int_ptr(<voidptr_t>out_cl_events[i], retain=False) for i in range(n_queues)))
             
         
             
