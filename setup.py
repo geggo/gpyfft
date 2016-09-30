@@ -2,6 +2,7 @@ import os
 import platform
 from setuptools import setup, Extension
 from setuptools.command.build_py import build_py as _build_py
+from distutils.util import convert_path
 from Cython.Build import cythonize
 
 CLFFT_DIR = r'/Users/gregor/Devel/clFFT'
@@ -45,29 +46,23 @@ if 'Windows' in platform.system():
     copy_clfftdll_to_package()
     package_data.update({'gpyfft': ['clFFT.dll', 'StatTimer.dll']},)
 
-class build_py(_build_py):
-    """
-    Enhanced build_py which copies version to the built
-    """
-    def build_package_data(self):
-        """Copy data files into build directory
-        Patched in such a way version.py -> silx/_version.py"""
-        _build_py.build_package_data(self)
-        for package, src_dir, build_dir, filenames in self.data_files:
-            if package == PROJECT:
-                filename = "version.py"
-                target = os.path.join(build_dir, "_" + filename)
-                self.mkpath(os.path.dirname(target))
-                self.copy_file(os.path.join(filename), target,
-                               preserve_mode=False)
-                break
-cmdclass['build_py'] = build_py
-
 
 def get_version():
-    import version
-    return version.strictversion
+    main_ns = {}
+    version_path = convert_path('gpyfft/version.py')
+    with open(version_path) as version_file:
+        exec(version_file.read(), main_ns)
+    version = main_ns['__version__']
+    return version
 
+    # import ast
+    # version = '0.3.0'
+    # with file('mypkg/mymod.py') as f:
+    # for line in f:
+    #     if line.startswith('__version__'):
+    #         version = ast.parse(line).body[0].value.s
+    #         break
+    
 
 def get_readme():
     dirname = os.path.dirname(os.path.abspath(__file__))
@@ -83,7 +78,8 @@ setup_requires = ["numpy", "cython"]
 setup(
     name='gpyfft',
     version=get_version(),
-    description='A Python wrapper for the OpenCL FFT library clFFT by AMD',
+    description='A Python wrapper for the OpenCL FFT library clFFT',
+    long_description=get_readme(),
     url=r"https://github.com/geggo/gpyfft",
     maintainer='Gregor Thalhammer',
     maintainer_email='gregor.thalhammer@gmail.com',
@@ -91,7 +87,6 @@ setup(
     packages=['gpyfft', "gpyfft.test"],
     ext_modules=cythonize(extensions),
     package_data=package_data,
-    long_description=get_readme(),
     install_requires=install_requires,
     setup_requires=setup_requires,
     cmdclass=cmdclass,
