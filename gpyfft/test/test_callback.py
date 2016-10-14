@@ -14,8 +14,14 @@ logger = logging.getLogger(os.path.basename(__file__))
 import pyopencl as cl
 import pyopencl.array as cla
 import numpy as np
-from ..gpyfftlib import GpyFFT
-from .opencl import get_contexts
+
+if __name__ == '__main__' and __package__ is None:
+    import sys, os.path as path
+    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+    __package__ = 'gpyfft.test'
+
+from gpyfft.gpyfftlib import GpyFFT
+from gpyfft.test.opencl import get_contexts
 
 
 class TestCallback(unittest.TestCase):
