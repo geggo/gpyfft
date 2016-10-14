@@ -39,7 +39,7 @@ return ret;
 """
 
     def test_callback(self):
-        self.G = GpyFFT(debug=True)
+        self.G = GpyFFT(debug=False)
         self.nd_data = np.array([[1, 2, 3, 4], [5, 6, 7, 8]], dtype=np.complex64)
 
         logger.info("clAmdFft Version: %s, \t Shape: %s", self.G.get_version(), self.nd_data.shape)

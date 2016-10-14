@@ -25,7 +25,7 @@ from gpyfft.test.opencl import get_contexts
 
 class TestSimple(unittest.TestCase):
     def test_simple(self):
-        self.G = GpyFFT(debug=True)
+        self.G = GpyFFT(debug=False)
         self.shape = (4, 8, 16)
         logger.info("clAmdFft Version: %s, \t Shape: %s", self.G.get_version(), self.shape)
         for ctx in get_contexts():
