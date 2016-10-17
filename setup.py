@@ -15,10 +15,6 @@ if 'Windows' in platform.system():
 import Cython.Compiler.Options
 Cython.Compiler.Options.generate_cleanup_code = 2
 
-cmdclass = {}
-PROJECT = "gpyfft"
-# TODO: see https://github.com/matthew-brett/du-cy-numpy
-
 extensions = [
     Extension("gpyfft.gpyfftlib",
               [os.path.join('gpyfft', 'gpyfftlib.pyx')],
@@ -55,14 +51,6 @@ def get_version():
     version = main_ns['__version__']
     return version
 
-    # import ast
-    # version = '0.3.0'
-    # with file('mypkg/mymod.py') as f:
-    # for line in f:
-    #     if line.startswith('__version__'):
-    #         version = ast.parse(line).body[0].value.s
-    #         break
-    
 
 def get_readme():
     dirname = os.path.dirname(os.path.abspath(__file__))
@@ -89,6 +77,4 @@ setup(
     package_data=package_data,
     install_requires=install_requires,
     setup_requires=setup_requires,
-    cmdclass=cmdclass,
     )
-
