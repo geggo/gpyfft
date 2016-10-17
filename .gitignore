@@ -1,0 +1,6 @@
+build
+*.pyc
+gpyfft.egg-info
+dist
+gpyfftlib.c
+*.so
