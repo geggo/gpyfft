@@ -11,22 +11,22 @@ import pyopencl as cl
 # precision: single, double
 
 class FFT(object):
-    def __init__(self, context, queue, input_arrays, output_arrays=None, axes = None, fast_math = False):
+    def __init__(self, context, queue, in_array, out_array=None, axes = None, fast_math = False):
         self.context = context
         self.queue = queue
 
-        in_array = input_arrays[0]
         t_strides_in, t_distance_in, t_batchsize_in, t_shape = self.calculate_transform_strides(
             axes, in_array.shape, in_array.strides, in_array.dtype)
 
-        if output_arrays is not None:
+        if out_array is not None:
             t_inplace = False
-            out_array = output_arrays[0]
-            t_strides_out, t_distance_out, foo, bar = self.calculate_transform_strides(
+            t_strides_out, t_distance_out, t_batchsize_out, t_shape_out = self.calculate_transform_strides(
                 axes, out_array.shape, out_array.strides, out_array.dtype)
+
+            assert t_batchsize_out == t_batchsize_in and t_shape == t_shape_out, 'input and output size does not match'
+            
         else:
             t_inplace = True
-            out_array = None
             t_strides_out, t_distance_out = t_strides_in, t_distance_in
 
         self.t_shape = t_shape
@@ -37,7 +37,7 @@ class FFT(object):
         plan.strides_in = t_strides_in
         plan.strides_out = t_strides_out
         plan.distances = (t_distance_in, t_distance_out)
-        plan.batch_size = t_batchsize_in #assert t_batchsize_in == t_batchsize_out
+        plan.batch_size = self.batchsize
 
         if False:
             print('axes', axes        )
@@ -59,11 +59,11 @@ class FFT(object):
             self.temp_buffer = None
 
         self.plan = plan
-        self.data = in_array #TODO: planar arrays
-        self.result = out_array #TODO: planar arrays
+        self.data = in_array
+        self.result = out_array
 
-
-    def calculate_transform_strides(self,
+    @classmethod
+    def calculate_transform_strides(cls,
                                     axes,
                                     shape,
                                     strides,
@@ -76,6 +76,7 @@ class FFT(object):
         tdim = len(axes) #dimensionality transform
         assert tdim <= ddim
 
+        # transform negative axis values (e.g. -1 for last axis) to positive
         axes_transform = tuple(a + ddim if a<0 else a for a in axes)
 
         axes_notransform = set(range(ddim)).difference(axes_transform)
