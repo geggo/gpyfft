@@ -212,7 +212,7 @@ cdef class Plan(object):
         def __get__(self):
             cdef clfftPrecision precision
             errcheck(clfftGetPlanPrecision(self.plan, &precision))
-            return precision
+            return clfftPrecision_(precision)
         def __set__(self, clfftPrecision value):
             errcheck(clfftSetPlanPrecision(self.plan, value))
 
