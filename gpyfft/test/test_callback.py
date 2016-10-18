@@ -15,8 +15,8 @@ from gpyfft.test.util import get_contexts
 class TestCallbackPreMul(unittest.TestCase):
 
     
-    callback_kernel = b"""
-float2 mulval(__global void* in,
+    callback_kernel_src_premul = b"""
+float2 premul(__global void* in,
               uint inoffset,
               __global void* userdata
               //__local void* localmem
@@ -28,16 +28,16 @@ return ret;
 }
 """
 
-    def test_callback(self):
+    def test_callback_pre(self):
         for ctx in get_contexts():
-            self.simple(ctx)
+            self.callback_pre(ctx)
 
-    def simple(self, context):
+    def callback_pre(self, context):
         print("context:", context)
         queue = cl.CommandQueue(context)
 
         nd_data = np.array([[1, 2, 3, 4],
-                            [5, 6, 7, 8]],
+                            [5, 6, 5, 2]],
                            dtype=np.complex64)
         cl_data = cla.to_device(queue, nd_data)
         cl_data_transformed = cla.empty_like(cl_data)
@@ -75,8 +75,8 @@ return ret;
         print('cl_user_data')
         print(cl_user_data)
 
-        plan.set_callback(b'mulval',
-                          self.callback_kernel,
+        plan.set_callback(b'premul',
+                          self.callback_kernel_src_premul,
                           'pre',
                           user_data=cl_user_data.data)
 
@@ -101,21 +101,64 @@ return ret;
         del plan
 
 
-# def suite():
-#     """create test suite and returns it
+    callback_kernel_src_postset = b"""
+    float2 postset(__global void* output,
+                   uint offset,
+                   __global void* userdata,
+                   float2 fftoutput)
+    {
+       float scalar = *((__global float*)userdata + offset); 
+       *((__global float2*)output + offset) = fftoutput * scalar;
+    }
+"""
 
-#     :return: test-suite
-#     """
-#     testsuite = unittest.TestSuite()
-#     testsuite.addTest(TestCallback("test_callback"))
-#     return testsuite
+    def test_callback_post(self):
+        for ctx in get_contexts():
+            self.callback_post(ctx)
 
+    def callback_post(self, context):
+        print("context:", context)
+        queue = cl.CommandQueue(context)
 
-# def run():
-#     runner = unittest.TextTestRunner()
-#     runner.run(suite())
+        nd_data = np.array([[1, 2, 3, 4],
+                            [5, 6, 5, 2]],
+                           dtype=np.complex64)
+        nd_user_data = np.array([[2, 2, 2, 2],
+                                 [3, 4, 5, 6]],
+                                dtype=np.float32)
 
-if __name__ == '__main__':
-    unittest.main()
+        cl_data = cla.to_device(queue, nd_data)
+        cl_user_data = cla.to_device(queue, nd_user_data)
+        cl_data_transformed = cla.empty_like(cl_data)
 
+        G = GpyFFT(debug=False)
+        plan = G.create_plan(context, cl_data.shape)
+        plan.strides_in  = tuple(x // cl_data.dtype.itemsize for x in cl_data.strides)
+        plan.strides_out = tuple(x // cl_data.dtype.itemsize for x in cl_data_transformed.strides)
+        plan.inplace = False
+        plan.precision = CLFFT_SINGLE
+        plan.set_callback(b'postset',
+                          self.callback_kernel_src_postset,
+                          'post',
+                          user_data=cl_user_data.data)
 
+        plan.bake(queue)
+        plan.enqueue_transform((queue,),
+                               (cl_data.data,),
+                               (cl_data_transformed.data,)
+                               )
+        queue.finish()
+
+        print('cl_data_transformed:')
+        print(cl_data_transformed)
+
+        print('fft(nd_data) * nd_user_data')
+        print(np.fft.fftn(nd_data))
+
+        assert np.allclose(cl_data_transformed.get(),
+                           np.fft.fftn(nd_data) * nd_user_data)
+        
+        del plan
+    
+
+#TODO: create TestSuite
