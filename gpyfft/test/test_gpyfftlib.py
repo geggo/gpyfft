@@ -4,23 +4,13 @@ import numpy as np
 import pyopencl as cl
 import pyopencl.array as cla
 from gpyfft import gpyfftlib
-
+from gpyfft.test.util import get_contexts
 
 """
 Some basic tests
 """
 
-def get_contexts():
-    ALL_DEVICES = []
-    for platform in cl.get_platforms():
-        ALL_DEVICES += platform.get_devices(device_type = cl.device_type.GPU)
-    contexts = [ cl.Context([device]) for device in ALL_DEVICES ]
-    return contexts
-
-
 class test_basic(unittest.TestCase):
-
-
     
     def test_basic(self):
         G = gpyfftlib.GpyFFT()
@@ -44,9 +34,6 @@ class test_basic(unittest.TestCase):
         print('plan.distances', plan.distances)
         print('plan.batch_size', plan.batch_size)
 
-        
-        
-        
 
 if __name__ == '__main__':
     unittest.main()

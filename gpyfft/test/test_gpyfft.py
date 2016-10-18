@@ -4,19 +4,12 @@ import numpy as np
 import pyopencl as cl
 import pyopencl.array as cla
 from gpyfft import FFT
+from gpyfft.test.util import get_contexts
 
 
 """
 Some basic tests for high-level interface
 """
-
-def get_contexts():
-    ALL_DEVICES = []
-    for platform in cl.get_platforms():
-        ALL_DEVICES += platform.get_devices(device_type = cl.device_type.GPU)
-    contexts = [ cl.Context([device]) for device in ALL_DEVICES ]
-    return contexts
-
 
 class test_fft(unittest.TestCase):
 
