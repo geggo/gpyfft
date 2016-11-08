@@ -7,26 +7,27 @@ A Python wrapper for the OpenCL FFT library clFFT.
 
 ### clFFT
 
+The open source library [clFFT] implements FFT for running on a GPU via OpenCL. Some highlights are:
 
-The open source library [clFFT] (released under Apache 2.0 license) implements FFT for running on a GPU via OpenCL. Currently supported features are:
-* batched 1D, 2D, and 3D transforms
-* supports many transform sizes (any combinatation of powers of 2,3,5,7,11, and 13)
-* single and double precisions
-* complex and real-to-complex transforms
-* supports injecting custom code for data pre- and post-processing
+	* batched 1D, 2D, and 3D transforms
+	* supports many transform sizes (any combinatation of powers of 2,3,5,7,11, and 13)
+	* flexible memory layout
+	* single and double precisions
+	* complex and real-to-complex transforms
+	* supports injecting custom code for data pre- and post-processing
 
 ### gpyfft
 
-This python wrapper is designed to tightly integrate with [PyOpenCL]. It
-consists of a low-level Cython based wrapper with an interface similar to the
-underlying C library. On top of that it offers a easier-to-use high-level
-interface designed to work on data contained in instances of
-`pyopencl.array.Array`, a numpy work-alike array class for
-GPU computations. The high-level interface takes some inspiration from [pyFFTW]. For details of the high-level interface see [fft.py].
+This python wrapper is designed to tightly integrate with [PyOpenCL]. It consists of a low-level Cython based wrapper with an interface similar to the underlying C library. On top of that it offers a high-level interface designed to work on data contained in instances of `pyopencl.array.Array`, a numpy work-alike array class for GPU computations. The high-level interface takes some inspiration from [pyFFTW]. For details of the high-level interface see [fft.py].
+
 
 ## Status
 
-This wrapper is functional, the high-level interface is not completely settled.
+The low lever interface is complete (more or less), the high-level interface is not yet settled and likely to change in future. Features to come (not yet implemented in the high-level interface):
+
+	* real-to-complex transforms (soon out of place, inplace?)
+	* double precision (no hardware to test ...)
+
 
 ## Basic usage
 
@@ -79,10 +80,11 @@ result_host = data_gpu.get()
 
 -   low level wrapper (mostly) completed
 -   high level wrapper
-   * complex and real<->complex transforms
-   * single precision
-   * interleaved data
-   * in and out-of-place transforms
+
+	* complex and real<->complex transforms
+	* single precision
+	* interleaved data
+	* in and out-of-place transforms
 
 
   [clFFT]: https://github.com/clMathLibraries/clFFT
