@@ -48,6 +48,20 @@ class test_fft(unittest.TestCase):
         assert np.allclose(cl_data_transformed.get(),
                            np.fft.fft(nd_data))
 
+    def test_1d_inplace_double(self):
+        ctx = get_contexts()[0]
+        queue = cl.CommandQueue(ctx)
+        
+        nd_data = np.arange(32, dtype=np.complex128)
+        cl_data = cla.to_device(queue, nd_data)
+        
+        transform = FFT(ctx, queue,
+                        cl_data)
+        transform.enqueue()
+
+        assert np.allclose(cl_data.get(),
+                           np.fft.fft(nd_data))
+
 
 if __name__ == '__main__':
     unittest.main()

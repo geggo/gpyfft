@@ -1,9 +1,11 @@
 from __future__ import absolute_import, division, print_function
 from .gpyfftlib import GpyFFT
+import gpyfft.gpyfftlib as gfft
 import pyopencl as cl
 GFFT = GpyFFT(debug=False)
 
 import pyopencl as cl
+import numpy as np
 
 # TODO:
 # real to complex: out-of-place
@@ -32,12 +34,25 @@ class FFT(object):
         self.t_shape = t_shape
         self.batchsize = t_batchsize_in
 
+        #assert np.issubclass(in_array.dtype, np.complexfloating) and \
+        #    np.issubclass(in_array.dtype, np.complexfloating), \
+                
+        #precision (+ fast_math!)
+        #complex64 <-> complex64
+        #complex128 <-> complex128
+
+        if in_array.dtype in (np.float32, np.complex64):
+            precision = gfft.CLFFT_SINGLE
+        elif in_array.dtype in (np.float64, np.complex128):
+            precision = gfft.CLFFT_DOUBLE
+
         plan = GFFT.create_plan(context, t_shape)
         plan.inplace = t_inplace
         plan.strides_in = t_strides_in
         plan.strides_out = t_strides_out
         plan.distances = (t_distance_in, t_distance_out)
         plan.batch_size = self.batchsize
+        plan.precision = precision
 
         if False:
             print('axes', axes        )
