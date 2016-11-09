@@ -25,8 +25,8 @@ This python wrapper is designed to tightly integrate with [PyOpenCL]. It consist
 
 The low lever interface is complete (more or less), the high-level interface is not yet settled and likely to change in future. Features to come (not yet implemented in the high-level interface):
 
-* real-to-complex transforms (soon out of place, inplace?)
-* double precision (no hardware to test ...)
+* real-to-complex transforms (out-of-place coming soon, in-place?)
+* double **implemented in 0.4.1**
 
 
 ## Basic usage
