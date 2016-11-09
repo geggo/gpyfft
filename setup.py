@@ -1,16 +1,30 @@
 import os
 import platform
 from setuptools import setup, Extension
-from setuptools.command.build_py import build_py as _build_py
 from distutils.util import convert_path
 from Cython.Build import cythonize
 
-CLFFT_DIR = r'/Users/gregor/Devel/clFFT'
+system = platform.system()
 
-CL_INCL_DIRS = []
-if 'Windows' in platform.system():
+## paths settings
+# Linux
+if 'Linux' in system:
+    CLFFT_DIR = r'/home/gregor/devel/clFFT'
+    CLFFT_LIB_DIR = r'/usr/local/lib64'
+    CL_INCL_DIRS = ['/opt/AMDAPPSDK-3.0/include']
+
+#Windows
+elif 'Windows' in system:
     CL_DIR = os.getenv('AMDAPPSDKROOT')
     CL_INCL_DIRS = [os.path.join(CL_DIR, 'include')]
+    CLFFT_LIB_DIR = os.path.join(CLFFT_DIR, 'src', 'library'),
+    
+# macOS
+elif 'Darwin' in system:
+    CLFFT_DIR = r'/Users/gregor/Devel/clFFT'
+    CLFFT_LIB_DIR = r'/Users/gregor/Devel/clFFT/src/library'
+    CL_INCL_DIRS = []
+
 
 import Cython.Compiler.Options
 Cython.Compiler.Options.generate_cleanup_code = 2
@@ -22,7 +36,7 @@ extensions = [
               extra_compile_args=[],
               extra_link_args=[],
               libraries=['clFFT'],
-              library_dirs=[os.path.join(CLFFT_DIR, 'src', 'library'), ],
+              library_dirs = [CLFFT_LIB_DIR,],
               )
     ]
 
