@@ -80,10 +80,12 @@ result_host = data_gpu.get()
 
 -   low level wrapper (mostly) completed
 -   high level wrapper
-  * complex and real<->complex transforms
+  * complex-to-complex transform, in- and out-of-place
+  * real-to-complex transform
   * single precision
+  * double precision 
   * interleaved data
-  * in and out-of-place transforms
+
 
 
   [clFFT]: https://github.com/clMathLibraries/clFFT

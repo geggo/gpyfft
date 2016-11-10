@@ -9,23 +9,21 @@ import numpy as np
 
 # TODO:
 # real to complex: out-of-place
-# planar, interleaved arrays
-# precision: single, double
 
 class FFT(object):
     def __init__(self, context, queue, in_array, out_array=None, axes = None, fast_math = False):
         self.context = context
         self.queue = queue
 
-        t_strides_in, t_distance_in, t_batchsize_in, t_shape = self.calculate_transform_strides(
+        t_strides_in, t_distance_in, t_batchsize_in, t_shape, axes_transform = self.calculate_transform_strides(
             axes, in_array.shape, in_array.strides, in_array.dtype)
 
         if out_array is not None:
             t_inplace = False
-            t_strides_out, t_distance_out, t_batchsize_out, t_shape_out = self.calculate_transform_strides(
+            t_strides_out, t_distance_out, t_batchsize_out, t_shape_out, foo = self.calculate_transform_strides(
                 axes, out_array.shape, out_array.strides, out_array.dtype)
 
-            assert t_batchsize_out == t_batchsize_in and t_shape == t_shape_out, 'input and output size does not match'
+            #assert t_batchsize_out == t_batchsize_in and t_shape == t_shape_out, 'input and output size does not match' #TODO: fails for real-to-complex
             
         else:
             t_inplace = True
@@ -46,6 +44,20 @@ class FFT(object):
         elif in_array.dtype in (np.float64, np.complex128):
             precision = gfft.CLFFT_DOUBLE
 
+        #TODO: add assertions that precision match
+        if in_array.dtype in (np.float32, np.float64):
+            layout_in = gfft.CLFFT_REAL
+            layout_out = gfft.CLFFT_HERMITIAN_INTERLEAVED
+
+            expected_out_shape = list(in_array.shape)
+            expected_out_shape[axes_transform[0]] = expected_out_shape[axes_transform[0]]//2 + 1
+            assert out_array.shape == tuple(expected_out_shape), \
+                'output array shape %s does not match expected shape: %s'%(out_array.shape,expected_out_shape)
+            #assert out_array.dtype == np.complex64
+        elif in_array.dtype in (np.complex64, np.complex128):
+            layout_in = gfft.CLFFT_COMPLEX_INTERLEAVED
+            layout_out = gfft.CLFFT_COMPLEX_INTERLEAVED #TODO: complex-to-real transform
+
         plan = GFFT.create_plan(context, t_shape)
         plan.inplace = t_inplace
         plan.strides_in = t_strides_in
@@ -53,6 +65,7 @@ class FFT(object):
         plan.distances = (t_distance_in, t_distance_out)
         plan.batch_size = self.batchsize
         plan.precision = precision
+        plan.layouts = (layout_in, layout_out)
 
         if False:
             print('axes', axes        )
@@ -112,7 +125,7 @@ class FFT(object):
         for a in axes_notransform:
             batchsize *= shape[a]
 
-        return (tuple(t_strides), t_distance, batchsize, tuple(t_shape))
+        return (tuple(t_strides), t_distance, batchsize, tuple(t_shape), axes_transform)
 
     def enqueue(self, forward = True):
         """enqueue transform"""
