@@ -18,13 +18,24 @@ def run(double_precision=False):
     
     n_run = 100 #set to 1 for proper testing
 
+    Nx = 1024
+    Ny = 1024
+    batchsize = 4
+    padx = 0
+    pady = 0
+    
     if n_run > 1:
-        nd_dataC = np.random.normal(size=(4,1024, 1024)).astype(dtype) #faster than 1024x1024?
+        nd_dataCbase = np.random.normal(size=(batchsize,Ny+pady,Nx+padx)).astype(dtype)
+        nd_dataC = nd_dataCbase[:batchsize, :Ny, :Nx]
     else:
         nd_dataC = np.ones((4,1024, 1024), dtype = dtype) #set n_run to 1
 
-    nd_dataF = np.asfortranarray(nd_dataC)
-    dataC = cla.to_device(queue, nd_dataC)
+    dataCbase = cla.to_device(queue, nd_dataCbase)
+    dataC = dataCbase[:batchsize, :Ny, :Nx]
+    #dataC.set(nd_dataC)
+
+    nd_dataFbase = np.asfortranarray(nd_dataCbase)
+    nd_dataF = np.asfortranarray(nd_dataC) #TODO: also with padding (how?)
     dataF = cla.to_device(queue, nd_dataF)
 
     nd_result = np.zeros_like(nd_dataC, dtype = dtype)
@@ -38,19 +49,19 @@ def run(double_precision=False):
         print('out of place transforms', dataC.shape, dataC.dtype)
         print('axes         in out')
         for axes in axes_list:
-            for data in (dataC,
-                         dataF):
-                for result in (resultC,
-                               resultF):
+            for layout_in, data in (('C', dataC),
+                                    ('F', dataF)):
+                for layout_out, result in (('C',resultC),
+                                           ('F',resultF)):
                     try:
 
                         transform = FFT(context, queue, data, result, axes = axes)
                         #transform.plan.transpose_result = True #not implemented for some transforms (works e.g. for out of place, (2,1) C C)
-                        print('%-10s %3s %3s'
+                        print('%-10s %1s %1s'
                                % (
                                    axes,
-                                   'C' if data.flags.c_contiguous else 'F',
-                                   'C' if result.flags.c_contiguous else 'F',
+                                   layout_in,  #'C' if data.flags.c_contiguous else 'F',
+                                   layout_out, #'C' if result.flags.c_contiguous else 'F',
                                ),
                               end=' ',
                         )
@@ -89,8 +100,9 @@ def run(double_precision=False):
         print('in place transforms', nd_dataC.shape, nd_dataC.dtype)
 
     for axes in axes_list:
-        for nd_data in (nd_dataC, nd_dataF):
+        for nd_data in (nd_dataCbase, nd_dataFbase):
             data = cla.to_device(queue, nd_data)
+            data = data[:batchsize, :Ny, :Nx]
             transform = FFT(context, queue, data, axes = axes)
             #transform.plan.transpose_result = True #not implemented
             tic = timeit.default_timer()
