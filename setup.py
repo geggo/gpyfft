@@ -11,18 +11,22 @@ system = platform.system()
 if 'Linux' in system:
     CLFFT_DIR = r'/home/gregor/devel/clFFT'
     CLFFT_LIB_DIR = r'/usr/local/lib64'
+    CLFFT_INCL_DIRS = [os.path.join(CLFFT_DIR, 'src', 'include'), ]
     CL_INCL_DIRS = ['/opt/AMDAPPSDK-3.0/include']
 
 #Windows
 elif 'Windows' in system:
+    CLFFT_DIR = r'C:\Users\q014gt\Devel\clFFT-Full-2.10.2-Windows-x64'
+    CLFFT_LIB_DIR = os.path.join(CLFFT_DIR, 'bin')
+    CLFFT_INCL_DIRS = [os.path.join(CLFFT_DIR, 'include'), ]
     CL_DIR = os.getenv('AMDAPPSDKROOT')
     CL_INCL_DIRS = [os.path.join(CL_DIR, 'include')]
-    CLFFT_LIB_DIR = os.path.join(CLFFT_DIR, 'src', 'library'),
     
 # macOS
 elif 'Darwin' in system:
     CLFFT_DIR = r'/Users/gregor/Devel/clFFT'
     CLFFT_LIB_DIR = r'/Users/gregor/Devel/clFFT/src/library'
+    CLFFT_INCL_DIRS = [os.path.join(CLFFT_DIR, 'src', 'include'), ]
     CL_INCL_DIRS = []
 
 
@@ -32,7 +36,7 @@ Cython.Compiler.Options.generate_cleanup_code = 2
 extensions = [
     Extension("gpyfft.gpyfftlib",
               [os.path.join('gpyfft', 'gpyfftlib.pyx')],
-              include_dirs=[os.path.join(CLFFT_DIR, 'src', 'include'), ] + CL_INCL_DIRS,
+              include_dirs= CLFFT_INCL_DIRS + CL_INCL_DIRS,
               extra_compile_args=[],
               extra_link_args=[],
               libraries=['clFFT'],
@@ -43,11 +47,11 @@ extensions = [
 def copy_clfftdll_to_package():
     import shutil
     shutil.copy(
-        os.path.join(CLFFT_DIR, 'src', 'staging', 'clFFT.dll'),
+        os.path.join(CLFFT_LIB_DIR, 'clFFT.dll'),
         'gpyfft')
 
     shutil.copy(
-        os.path.join(CLFFT_DIR, 'src', 'staging', 'StatTimer.dll'),
+        os.path.join(CLFFT_LIB_DIR, 'StatTimer.dll'),
         'gpyfft')
     print("copied clFFT.dll, StatTimer.dll")
 
