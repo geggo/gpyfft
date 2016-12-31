@@ -4,3 +4,5 @@ gpyfft.egg-info
 dist
 gpyfftlib.c
 *.so
+.cache
+.ipynb_checkpoints
