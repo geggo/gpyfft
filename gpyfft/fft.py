@@ -11,7 +11,10 @@ import numpy as np
 # real to complex: out-of-place
 
 class FFT(object):
-    def __init__(self, context, queue, in_array, out_array=None, axes = None, fast_math = False):
+    def __init__(self, context, queue, in_array, out_array=None, axes = None,
+                 fast_math = False,
+                 real=False,
+    ):
         self.context = context
         self.queue = queue
 
@@ -29,9 +32,7 @@ class FFT(object):
             t_inplace = True
             t_strides_out, t_distance_out = t_strides_in, t_distance_in
 
-        self.t_shape = t_shape
-        self.batchsize = t_batchsize_in
-
+        
         #assert np.issubclass(in_array.dtype, np.complexfloating) and \
         #    np.issubclass(in_array.dtype, np.complexfloating), \
                 
@@ -53,10 +54,19 @@ class FFT(object):
             expected_out_shape[axes_transform[0]] = expected_out_shape[axes_transform[0]]//2 + 1
             assert out_array.shape == tuple(expected_out_shape), \
                 'output array shape %s does not match expected shape: %s'%(out_array.shape,expected_out_shape)
-            #assert out_array.dtype == np.complex64
+
         elif in_array.dtype in (np.complex64, np.complex128):
-            layout_in = gfft.CLFFT_COMPLEX_INTERLEAVED
-            layout_out = gfft.CLFFT_COMPLEX_INTERLEAVED #TODO: complex-to-real transform
+            if not real:
+                layout_in = gfft.CLFFT_COMPLEX_INTERLEAVED
+                layout_out = gfft.CLFFT_COMPLEX_INTERLEAVED
+            else:
+                # complex-to-real transform
+                layout_in = gfft.CLFFT_HERMITIAN_INTERLEAVED
+                layout_out = gfft.CLFFT_REAL
+                t_shape = t_shape_out
+
+        self.t_shape = t_shape
+        self.batchsize = t_batchsize_in
 
         plan = GFFT.create_plan(context, t_shape)
         plan.inplace = t_inplace
