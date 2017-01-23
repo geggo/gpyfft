@@ -576,10 +576,13 @@ cdef class Plan(object):
         for i, in_buffer in enumerate(in_buffers):
             assert isinstance(in_buffer, cl.MemoryObjectHolder)
             in_buffers_[i] = <cl_mem><voidptr_t>in_buffer.int_ptr
-            if in_offsets is not None:
+            # no need to create sub-buffer if offset is zero (and in any case,
+            # a zero-offset sub-buffer seems to create problems on some Macs)
+            if in_offsets is not None and in_offsets[i] != 0:
                 errval = clGetMemObjectInfo(in_buffers_[i], CL_MEM_FLAGS, sizeof(subbufflags), &subbufflags, NULL)
                 if errval != CL_SUCCESS:
                     raise Exception("Error (%d) getting memory object info CL_MEM_FLAGS!" % (errval,))
+                subbufflags &= ~CL_MEM_COPY_HOST_PTR
                 errval = clGetMemObjectInfo(in_buffers_[i], CL_MEM_SIZE, sizeof(subbufsize), &subbufsize, NULL)
                 if errval != CL_SUCCESS:
                     raise Exception("Error (%d) getting memory object info CL_MEM_SIZE!" % (errval,))
@@ -602,13 +605,17 @@ cdef class Plan(object):
             for i, out_buffer in enumerate(out_buffers):
                 assert isinstance(out_buffer, cl.MemoryObjectHolder)
                 out_buffers_array[i] = <cl_mem><voidptr_t>out_buffer.int_ptr
-                if out_offsets is not None:
+                # no need to create sub-buffer if offset is zero (and
+                # in any case, a zero-offset sub-buffer seems to
+                # create problems on some Macs)
+                if out_offsets is not None and out_offsets[i] != 0:
                     errval = clGetMemObjectInfo(out_buffers_array[i], CL_MEM_FLAGS, sizeof(subbufflags), &subbufflags, NULL)
                     if errval != CL_SUCCESS:
                         raise Exception("Error (%d) getting memory object info CL_MEM_FLAGS!" % (errval,))
                     errval = clGetMemObjectInfo(out_buffers_array[i], CL_MEM_SIZE, sizeof(subbufsize), &subbufsize, NULL)
                     if errval != CL_SUCCESS:
                         raise Exception("Error (%d) getting memory object info CL_MEM_SIZE!" % (errval,))
+                    subbufflags &= ~CL_MEM_COPY_HOST_PTR
                     subbufregion.origin = out_offsets[i]
                     subbufregion.size = subbufsize - subbufregion.origin
                     out_buffers_array[i] = clCreateSubBuffer(out_buffers_array[i], subbufflags, CL_BUFFER_CREATE_TYPE_REGION, &subbufregion, &subbuferror)
@@ -634,11 +641,11 @@ cdef class Plan(object):
                                           out_buffers_,
                                           tmp_buffer_))
         
-        if in_offsets is not None:
-            for i in range(n_in_buffers):
+        for i in range(n_in_buffers):
+            if in_buffers_[i] != <cl_mem><voidptr_t>in_buffer.int_ptr:
                 clReleaseMemObject(in_buffers_[i])
-        if out_offsets is not None:
-            for i in range(n_out_buffers):
+        for i in range(n_out_buffers):
+            if out_buffers_[i] != <cl_mem><voidptr_t>out_buffer.int_ptr:
                 clReleaseMemObject(out_buffers_[i])
 
         #return tuple((cl.Event.from_cl_event_as_int(<long>out_cl_events[i]) for i in range(n_queues)))
