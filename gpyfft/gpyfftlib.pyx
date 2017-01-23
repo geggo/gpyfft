@@ -550,7 +550,7 @@ cdef class Plan(object):
         cdef cl_event wait_for_events_array[MAX_WAITFOR_EVENTS]
         cdef cl_event* wait_for_events_ = NULL
         cdef n_waitfor_events = 0
-        if wait_for_events is not None:
+        if wait_for_events is not None and len(wait_for_events) > 0:
             n_waitfor_events = len(wait_for_events)
             assert n_waitfor_events <= MAX_WAITFOR_EVENTS
             for i, event in enumerate(wait_for_events):
