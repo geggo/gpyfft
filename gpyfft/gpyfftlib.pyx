@@ -559,29 +559,29 @@ cdef class Plan(object):
             wait_for_events_ = &wait_for_events_array[0]
 
         cdef cl_mem in_buffers_[2]
-        if isinstance(in_buffers, cl.Buffer):
+        if isinstance(in_buffers, cl.MemoryObjectHolder):
             in_buffers = (in_buffers,)
         n_in_buffers = len(in_buffers)
         assert n_in_buffers <= 2
         for i, in_buffer in enumerate(in_buffers):
-            assert isinstance(in_buffer, cl.Buffer)
+            assert isinstance(in_buffer, cl.MemoryObjectHolder)
             in_buffers_[i] = <cl_mem><voidptr_t>in_buffer.int_ptr
 
         cdef cl_mem out_buffers_array[2]
         cdef cl_mem* out_buffers_ = NULL
         if out_buffers is not None:
-            if isinstance(out_buffers, cl.Buffer):
+            if isinstance(out_buffers, cl.MemoryObjectHolder):
                 out_buffers = (out_buffers,)
             n_out_buffers = len(out_buffers)
             assert n_out_buffers in (1,2)
             for i, out_buffer in enumerate(out_buffers):
-                assert isinstance(out_buffer, cl.Buffer)
+                assert isinstance(out_buffer, cl.MemoryObjectHolder)
                 out_buffers_array[i] = <cl_mem><voidptr_t>out_buffer.int_ptr
             out_buffers_ = &out_buffers_array[0]
 
         cdef cl_mem tmp_buffer_ = NULL
         if temp_buffer is not None:
-            assert isinstance(temp_buffer, cl.Buffer)
+            assert isinstance(temp_buffer, cl.MemoryObjectHolder)
             tmp_buffer_ = <cl_mem><voidptr_t>temp_buffer.int_ptr
 
         cdef cl_event out_cl_events[MAX_QUEUES]
