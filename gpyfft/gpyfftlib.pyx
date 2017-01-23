@@ -598,6 +598,7 @@ cdef class Plan(object):
 
         cdef cl_mem out_buffers_array[2]
         cdef cl_mem* out_buffers_ = NULL
+        n_out_buffers = 0
         if out_buffers is not None:
             if isinstance(out_buffers, cl.MemoryObjectHolder):
                 out_buffers = (out_buffers,)
@@ -645,10 +646,10 @@ cdef class Plan(object):
                                           tmp_buffer_))
         
         for i in range(n_in_buffers):
-            if in_buffers_[i] != <cl_mem><voidptr_t>in_buffer.int_ptr:
+            if in_buffers_[i] != <cl_mem><voidptr_t>in_buffers[i].int_ptr:
                 clReleaseMemObject(in_buffers_[i])
         for i in range(n_out_buffers):
-            if out_buffers_[i] != <cl_mem><voidptr_t>out_buffer.int_ptr:
+            if out_buffers_[i] != <cl_mem><voidptr_t>out_buffers[i].int_ptr:
                 clReleaseMemObject(out_buffers_[i])
 
         #return tuple((cl.Event.from_cl_event_as_int(<long>out_cl_events[i]) for i in range(n_queues)))
