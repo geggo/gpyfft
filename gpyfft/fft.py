@@ -7,24 +7,31 @@ GFFT = GpyFFT(debug=False)
 import pyopencl as cl
 import numpy as np
 
-# TODO:
-# real to complex: out-of-place
-
 class FFT(object):
     def __init__(self, context, queue, in_array, out_array=None, axes = None,
                  fast_math = False,
                  real=False,
+                 in_shape = None,
+                 out_shape = None,
     ):
         self.context = context
         self.queue = queue
 
+        if in_shape is None:
+            in_shape = in_array.shape
         t_strides_in, t_distance_in, t_batchsize_in, t_shape, axes_transform = self.calculate_transform_strides(
-            axes, in_array.shape, in_array.strides, in_array.dtype)
+            axes, in_shape, in_array.strides, in_array.dtype)
 
         if out_array is not None:
-            t_inplace = False
+            # if both arrays point to the same underlying buffer,
+            # assume in-place
+            t_inplace = (in_array.base_data is out_array.base_data)
+            if out_shape is None:
+                out_shape = out_array.shape
             t_strides_out, t_distance_out, t_batchsize_out, t_shape_out, foo = self.calculate_transform_strides(
-                axes, out_array.shape, out_array.strides, out_array.dtype)
+                axes, out_shape, out_array.strides, out_array.dtype)
+            if t_inplace:
+                out_array = None
 
             #assert t_batchsize_out == t_batchsize_in and t_shape == t_shape_out, 'input and output size does not match' #TODO: fails for real-to-complex
             
@@ -50,10 +57,10 @@ class FFT(object):
             layout_in = gfft.CLFFT_REAL
             layout_out = gfft.CLFFT_HERMITIAN_INTERLEAVED
 
-            expected_out_shape = list(in_array.shape)
+            expected_out_shape = list(in_shape)
             expected_out_shape[axes_transform[0]] = expected_out_shape[axes_transform[0]]//2 + 1
-            assert out_array.shape == tuple(expected_out_shape), \
-                'output array shape %s does not match expected shape: %s'%(out_array.shape,expected_out_shape)
+            assert out_shape == tuple(expected_out_shape), \
+                'output array shape %s does not match expected shape: %s'%(out_shape,expected_out_shape)
 
         elif in_array.dtype in (np.complex64, np.complex128):
             if not real:
@@ -81,6 +88,7 @@ class FFT(object):
             print('axes', axes        )
             print('in_array.shape:          ', in_array.shape)
             print('in_array.strides/itemsize', tuple(s // in_array.dtype.itemsize for s in in_array.strides))
+            print('in_shape:                ', in_shape)
             print('shape transform          ', t_shape)
             print('t_strides                ', t_strides_in)
             print('distance_in              ', t_distance_in)
