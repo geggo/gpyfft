@@ -140,10 +140,13 @@ class FFT(object):
     def enqueue(self, forward = True):
         """enqueue transform"""
         if self.result is not None:
-            events = self.plan.enqueue_transform((self.queue,), (self.data.data,), (self.result.data),
+            events = self.plan.enqueue_transform((self.queue,), (self.data.base_data,), (self.result.base_data),
+                                        in_offsets=(self.data.offset,),
+                                        out_offsets=(self.result.offset,),
                                         direction_forward = forward, temp_buffer = self.temp_buffer)
         else:
-            events = self.plan.enqueue_transform((self.queue,), (self.data.data,),
+            events = self.plan.enqueue_transform((self.queue,), (self.data.base_data,),
+                                        in_offsets=(self.data.offset,),
                                         direction_forward = forward, temp_buffer = self.temp_buffer)
         return events
 
