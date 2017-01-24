@@ -19,9 +19,6 @@ ctypedef size_t voidptr_t
 DEF MAX_QUEUES = 5
 DEF MAX_WAITFOR_EVENTS = 10
 
-def sum_reduce(x, y):
-    return x + y
-
 error_dict = {
     CLFFT_SUCCESS: 'no error',
     CLFFT_BUGCHECK: 'Bugcheck',
