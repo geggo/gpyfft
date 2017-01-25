@@ -172,11 +172,6 @@ class FFT(object):
             events = self.plan.enqueue_transform((self.queue,), (data_buffer,),
                                         direction_forward = forward, temp_buffer = self.temp_buffer, wait_for_events = wait_for_events)
 
-        #if data_buffer is not data.base_data:
-        #    data_buffer.release()
-        #if result is not None and result_buffer is not result.base_data:
-        #    result_buffer.release()
-
         return events
 
     def update_arrays(self, input_array, output_array):
