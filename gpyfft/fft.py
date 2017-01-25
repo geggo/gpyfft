@@ -140,7 +140,7 @@ class FFT(object):
     def enqueue(self, forward = True, wait_for_events = None):
         return self.enqueue_arrays(forward=forward, data=self.data, result=self.result, wait_for_events=wait_for_events)
 
-    def enqueue_arrays(self, forward = True, data = None, result = None, wait_for_events = None):
+    def enqueue_arrays(self, data = None, result = None, forward = True, wait_for_events = None):
         """enqueue transform"""
         if data is None:
             data = self.data
