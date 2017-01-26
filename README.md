@@ -25,9 +25,19 @@ This python wrapper is designed to tightly integrate with [PyOpenCL]. It consist
 
 The low lever interface is complete (more or less), the high-level interface is not yet settled and likely to change in future. Features to come (not yet implemented in the high-level interface):
 
-* real-to-complex transforms (out-of-place coming soon, in-place?)
-* double **implemented in 0.4.1**
+### work done
 
+-   low level wrapper (mostly) completed
+-   high level wrapper
+
+  * complex-to-complex transform, in- and out-of-place
+  * real-to-complex transform (out-of-place)
+  * complex-to-real transform (out-of-place)
+  * single precision
+  * double precision 
+  * interleaved data
+  * support injecting custom OpenCL code (pre and post callbacks)
+  * accept pyopencl arrays with non-zero offsets (Syam Gadde)
 
 ## Basic usage
 
@@ -76,15 +86,7 @@ Read back the data from the GPU to the host
 result_host = data_gpu.get()
 ```
 
-### work done
 
--   low level wrapper (mostly) completed
--   high level wrapper
-  * complex-to-complex transform, in- and out-of-place
-  * real-to-complex transform
-  * single precision
-  * double precision 
-  * interleaved data
 
 
 
