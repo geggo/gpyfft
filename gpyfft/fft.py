@@ -8,13 +8,14 @@ import pyopencl as cl
 import numpy as np
 
 # TODO:
-# real to complex: out-of-place
 
 class FFT(object):
     def __init__(self, context, queue, in_array, out_array=None, axes = None,
                  fast_math = False,
                  real=False,
+                 callbacks=None, #dict: 'pre', 'post'
     ):
+        # Callbacks: dict(pre=b'pre source (kernel named pre!)')
         self.context = context
         self.queue = queue
 
@@ -77,6 +78,16 @@ class FFT(object):
         plan.precision = precision
         plan.layouts = (layout_in, layout_out)
 
+        if callbacks is not None:
+            if callbacks.has_key('pre'):
+                plan.set_callback(b'pre',
+                                  callbacks['pre'],
+                                  'pre')
+            if 'post' in callbacks:
+                plan.set_callback(b'post',
+                                  callbacks['post'],
+                                  'post')
+        
         if False:
             print('axes', axes        )
             print('in_array.shape:          ', in_array.shape)
