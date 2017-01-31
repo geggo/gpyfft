@@ -14,7 +14,7 @@ import sys
 class FFT(object):
     def __init__(self, context, queue, in_array, out_array=None, axes = None,
                  fast_math = False,
-                 real = False,
+                 real=False,
                  fft_shape = None, # required only for in-place complex-to-real
                  callbacks=None, #dict: 'pre', 'post'
     ):
@@ -47,13 +47,16 @@ class FFT(object):
 
         t_strides_in, t_distance_in, t_batchsize_in, t_shape, axes_transform = self.calculate_transform_strides(
             axes, in_array.shape, in_array.strides, in_array.dtype)
+
         if real:
             real_axis = axes_transform[0]
+
         if out_array is not None:
             t_strides_out, t_distance_out, t_batchsize_out, t_shape_out, foo = self.calculate_transform_strides(
                 axes, out_array.shape, out_array.strides, out_array.dtype)
 
             #assert t_batchsize_out == t_batchsize_in and t_shape == t_shape_out, 'input and output size does not match' #TODO: fails for real-to-complex
+
         else:
             if real:
                 t_strides_out = t_strides_in
@@ -105,6 +108,7 @@ class FFT(object):
                         'input array shape %s does not match expected shape: %s'%(in_array.shape, expected_in_shape)
                     if fft_shape is not None:
                         assert tuple(fft_shape) == expected_in_shape, "fft_shape set incorrectly (in any case, not necessary to send fft_shape for out-of-place complex-to-real)"
+
 
         #assert np.issubclass(in_array.dtype, np.complexfloating) and \
         #    np.issubclass(in_array.dtype, np.complexfloating), \
