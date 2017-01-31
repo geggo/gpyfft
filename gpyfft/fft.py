@@ -29,13 +29,13 @@ class FFT(object):
         in_type = in_array.dtype
         in_kind = in_type.kind
         in_itemsize = in_type.itemsize
-        assert in_kind in ('c', 'f') and in_itemsize in (4, 8), "Input array must be float32, float64, complex64, or complex128"
+        assert in_kind in ('c', 'f') and in_itemsize in (4, 8, 16), "Input array must be float32, float64, complex64, or complex128"
         out_kind = None
         if not t_inplace:
             out_type = out_array.dtype
             out_kind = out_type.kind
             out_itemsize = out_type.itemsize
-            assert out_kind in ('c', 'f') and out_itemsize in (4, 8), "Output array must be float32, float64, complex64, or complex128"
+            assert out_kind in ('c', 'f') and out_itemsize in (4, 8, 16), "Output array must be float32, float64, complex64, or complex128"
         assert not (in_kind == 'f' and out_kind == 'f'), "Input and output can't both be real!"
         assert not (real and (in_kind == 'c' and  out_kind == 'c')), "Input and output are both complex but real=True is specified!"
         if (in_kind == 'f' or out_kind == 'f') and not real:
