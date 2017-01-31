@@ -93,9 +93,11 @@ class FFT(object):
             print('in_array.shape:          ', in_array.shape)
             print('in_array.strides/itemsize', tuple(s // in_array.dtype.itemsize for s in in_array.strides))
             print('shape transform          ', t_shape)
+            print('layout_in                ', str(layout_in).split('.')[1])
             print('t_strides                ', t_strides_in)
             print('distance_in              ', t_distance_in)
             print('batchsize                ', t_batchsize_in)
+            print('layout_out               ', str(layout_out).split('.')[1])
             print('t_stride_out             ', t_strides_out)
             print('inplace                  ', t_inplace)
 
