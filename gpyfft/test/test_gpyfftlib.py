@@ -15,9 +15,9 @@ class test_basic(unittest.TestCase):
     def test_basic(self):
         G = gpyfftlib.GpyFFT()
         print('clFFT version:', G.get_version())
-        #del G
+        del G
 
-    @unittest.skip('segfaults with pytest')
+    #@unittest.skip('segfaults with pytest')
     def test_create_plan(self):
         G = gpyfftlib.GpyFFT()
 
@@ -35,8 +35,8 @@ class test_basic(unittest.TestCase):
         print('plan.strides_out', plan.strides_out)
         print('plan.distances', plan.distances)
         print('plan.batch_size', plan.batch_size)
-        #del plan
-        #del G
+        del plan
+        del G
 
 
 if __name__ == '__main__':
