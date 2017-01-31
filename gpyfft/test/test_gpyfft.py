@@ -5,7 +5,7 @@ import numpy as np
 import pyopencl as cl
 import pyopencl.array as cla
 from gpyfft import FFT
-from gpyfft.test.util import get_contexts
+from gpyfft.test.util import get_contexts, has_double
 
 
 """
@@ -55,6 +55,8 @@ class test_fft(unittest.TestCase):
 
     @parameterized.expand(contexts)
     def test_1d_inplace_double(self, ctx):
+        if not has_double(ctx): #TODO: find better way to skip test
+            return
         queue = cl.CommandQueue(ctx)
         
         nd_data = np.arange(32, dtype=np.complex128)
@@ -116,6 +118,8 @@ class test_fft(unittest.TestCase):
 
     @parameterized.expand(contexts)
     def test_2d_real_to_complex_double(self, ctx):
+        if not has_double(ctx): #TODO: find better way to skip test
+            return
         queue = cl.CommandQueue(ctx)
         
         M = 64

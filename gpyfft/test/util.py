@@ -9,3 +9,7 @@ def get_contexts():
         ALL_DEVICES += platform.get_devices(device_type = cl.device_type.GPU)
     contexts = [ cl.Context([device]) for device in ALL_DEVICES ]
     return contexts
+
+def has_double(ctx):
+    dev = ctx.devices[0]
+    return 'cl_khr_fp64' in dev.extensions

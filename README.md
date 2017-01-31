@@ -41,7 +41,8 @@ The low lever interface is complete (more or less), the high-level interface is 
 
 ## Basic usage
 
-Here we describe a simple example of performing a batch of 2D complex-to-complex FFT transforms on the GPU, using the high-level interface of gpyfft. The full source code of this example ist contained in [simple\_example.py], which is the essence of [benchmark.py]
+Here we describe a simple example of performing a batch of 2D complex-to-complex FFT transforms on the GPU, using the high-level interface of gpyfft. The full source code of this example ist contained in [simple\_example.py], which is the essence of [benchmark.py].
+Note, for testing it is recommended to start [simple\_example.py] from the command line, so you have the possibility to interactively choose an OpenCL context (otherwise, e.g. when using an IPython, you are not asked end might end up with a CPU device, which is prone to fail). 
 
 imports:
 

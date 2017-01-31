@@ -45,15 +45,14 @@ class FFT(object):
             assert in_itemsize == out_itemsize, "Input and output arrays must have same precision in complex->complex transforms!"
         # all in/out datatypes are consistent with each other
 
-        t_strides_in, t_distance_in, t_batchsize_in, t_shape, axes_transform = self.calculate_transform_strides(
-            axes, in_array.shape, in_array.strides, in_array.dtype)
+        t_strides_in, t_distance_in, t_batchsize_in, t_shape, axes_transform = self.calculate_transform_strides(axes, in_array)
 
         if real:
             real_axis = axes_transform[0]
 
         if out_array is not None:
             t_strides_out, t_distance_out, t_batchsize_out, t_shape_out, foo = self.calculate_transform_strides(
-                axes, out_array.shape, out_array.strides, out_array.dtype)
+                axes, out_array)
 
             #assert t_batchsize_out == t_batchsize_in and t_shape == t_shape_out, 'input and output size does not match' #TODO: fails for real-to-complex
 
@@ -169,10 +168,12 @@ class FFT(object):
                 print('out_array.shape:          ', out_array.shape)
                 print('out_array.strides/itemsize', tuple(s // out_array.dtype.itemsize for s in out_array.strides))
             print('shape transform          ', t_shape)
+            print('layout_in                ', str(layout_in).split('.')[1])
             print('t_strides                ', t_strides_in)
             print('distance_in              ', t_distance_in)
             print('distance_out             ', t_distance_out)
             print('batchsize                ', t_batchsize_in)
+            print('layout_out               ', str(layout_out).split('.')[1])
             print('t_stride_out             ', t_strides_out)
             print('inplace                  ', t_inplace)
 
@@ -189,41 +190,59 @@ class FFT(object):
         self.result = out_array
 
     @classmethod
-    def calculate_transform_strides(cls,
-                                    axes,
-                                    shape,
-                                    strides,
-                                    dtype,
-                                   ):
+    def calculate_transform_strides(cls, axes, array):
+    
+        shape = np.array(array.shape)
+        strides = np.array(array.strides)
+        dtype = array.dtype
+        
         ddim = len(shape) #dimensionality data
-        if axes is None:
-            axes = range(ddim)
+        
+        #transform along all axes if transform axes are not given (None)
+        axes_transform = np.arange(ddim) if axes is None else np.array(axes)
 
-        tdim = len(axes) #dimensionality transform
+        tdim = len(axes_transform) #dimensionality transform
         assert tdim <= ddim
 
         # transform negative axis values (e.g. -1 for last axis) to positive
-        axes_transform = tuple(a + ddim if a<0 else a for a in axes)
-
-        axes_notransform = set(range(ddim)).difference(axes_transform)
-        assert len(axes_notransform) < 2, 'more than one non-transformed axis'
-        #TODO: collapse non-transformed axes if possible
-
-        t_shape = [shape[i] for i in axes_transform]
-        dsize = dtype.itemsize
-        t_strides = [strides[i]//dsize for i in axes_transform]
-
-        t_distance = [strides[i]//dsize for i in axes_notransform]
-        if not t_distance:
+        axes_transform[axes_transform<0] += ddim
+        
+        # remaining, non-transformed axes
+        axes_notransform = np.lib.arraysetops.setdiff1d(range(ddim), axes_transform)
+        
+        #sort non-transformed axes by strides
+        axes_notransform = axes_notransform[np.argsort(strides[axes_notransform])]
+        
+        #print "axes_notransformed sorted", axes_notransform
+        
+        # -> list of collapsable axes, [ [x,y], [z] ]
+        collapsable_axes_list = [] #result
+        collapsable_axes_candidates = axes_notransform[:1].tolist() #intermediate list of collapsable axes (magic code to get empty list if axes_notransform is empty)
+        for a in axes_notransform[1:]:
+            if strides[a] == strides[collapsable_axes_candidates[-1]] * shape[collapsable_axes_candidates[-1]]:
+                collapsable_axes_candidates.append(a) #add axes to intermediate list of collapsable axes
+            else: #does not fit into current intermediate list of collapsable axes
+                collapsable_axes_list.append(collapsable_axes_candidates) #store away intermediate list
+                collapsable_axes_candidates = [a] #start new intermediate list
+        collapsable_axes_list.append(collapsable_axes_candidates) #append last intermediate list to 
+        
+        assert len(collapsable_axes_list) == 1 #all non-transformed axes collapsed
+        axes_notransform = collapsable_axes_list[0] #all axes collapsable: take single group of collapsable axes
+        
+        t_distances = strides[axes_notransform]//dtype.itemsize
+                
+        if len(t_distances) == 0:
             t_distance = 0
         else:
-            t_distance = t_distance[0] #TODO
+            t_distance = t_distances[0] #takes smalles stride (axes_notransform have been sorted by stride size)
+                       
+        batchsize = np.prod(shape[axes_notransform])
+        
+        t_shape = shape[axes_transform]
+        t_strides = strides[axes_transform]//dtype.itemsize
+        
+        return (tuple(t_strides), t_distance, batchsize, tuple(t_shape), tuple(axes_transform)) #, tuple(axes_notransform))
 
-        batchsize = 1
-        for a in axes_notransform:
-            batchsize *= shape[a]
-
-        return (tuple(t_strides), t_distance, batchsize, tuple(t_shape), axes_transform)
 
     def enqueue(self, forward = True, wait_for_events = None):
         return self.enqueue_arrays(forward=forward, data=self.data, result=self.result, wait_for_events=wait_for_events)
