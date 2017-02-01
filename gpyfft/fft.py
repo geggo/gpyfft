@@ -25,6 +25,8 @@ class FFT(object):
             t_inplace = False
             t_strides_out, t_distance_out, t_batchsize_out, t_shape_out, foo = self.calculate_transform_strides(
                 axes, out_array)
+            if in_array.base_data is out_array.base_data:
+                t_inplace = True
 
             #assert t_batchsize_out == t_batchsize_in and t_shape == t_shape_out, 'input and output size does not match' #TODO: fails for real-to-complex
             
@@ -64,6 +66,13 @@ class FFT(object):
                 layout_in = gfft.CLFFT_HERMITIAN_INTERLEAVED
                 layout_out = gfft.CLFFT_REAL
                 t_shape = t_shape_out
+
+        if t_inplace and ((layout_in is gfft.CLFFT_REAL) or
+                          (layout_out is gfft.CLFFT_REAL)):
+            assert ((in_array.strides[axes_transform[0]] == in_array.dtype.itemsize) and \
+                    (out_array.strides[axes_transform[0]] == out_array.dtype.itemsize)), \
+                    'inline real transforms need stride 1 for first transform axis'
+
 
         self.t_shape = t_shape
         self.batchsize = t_batchsize_in
