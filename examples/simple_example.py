@@ -10,7 +10,7 @@ data_host = np.zeros((4, 1024, 1024), dtype = np.complex64)
 #data_host[:] = some_useful_data
 data_gpu = cla.to_device(queue, data_host)
 
-transform = FFT(context, queue, (data_gpu,), axes = (2, 1))
+transform = FFT(context, queue, data_gpu, axes = (2, 1))
 
 event, = transform.enqueue()
 event.wait()

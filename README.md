@@ -25,13 +25,24 @@ This python wrapper is designed to tightly integrate with [PyOpenCL]. It consist
 
 The low lever interface is complete (more or less), the high-level interface is not yet settled and likely to change in future. Features to come (not yet implemented in the high-level interface):
 
-* real-to-complex transforms (out-of-place coming soon, in-place?)
-* double **implemented in 0.4.1**
+### work done
 
+-   low level wrapper (mostly) completed
+-   high level wrapper
+
+  * complex-to-complex transform, in- and out-of-place
+  * real-to-complex transform (out-of-place)
+  * complex-to-real transform (out-of-place)
+  * single precision
+  * double precision 
+  * interleaved data
+  * support injecting custom OpenCL code (pre and post callbacks)
+  * accept pyopencl arrays with non-zero offsets (Syam Gadde)
 
 ## Basic usage
 
-Here we describe a simple example of performing a batch of 2D complex-to-complex FFT transforms on the GPU, using the high-level interface of gpyfft. The full source code of this example ist contained in [simple\_example.py], which is the essence of [benchmark.py]
+Here we describe a simple example of performing a batch of 2D complex-to-complex FFT transforms on the GPU, using the high-level interface of gpyfft. The full source code of this example ist contained in [simple\_example.py], which is the essence of [benchmark.py].
+Note, for testing it is recommended to start [simple\_example.py] from the command line, so you have the possibility to interactively choose an OpenCL context (otherwise, e.g. when using an IPython, you are not asked end might end up with a CPU device, which is prone to fail). 
 
 imports:
 
@@ -76,14 +87,8 @@ Read back the data from the GPU to the host
 result_host = data_gpu.get()
 ```
 
-### work done
 
--   low level wrapper (mostly) completed
--   high level wrapper
-  * complex and real<->complex transforms
-  * single precision
-  * interleaved data
-  * in and out-of-place transforms
+
 
 
   [clFFT]: https://github.com/clMathLibraries/clFFT
