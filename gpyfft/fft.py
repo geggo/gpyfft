@@ -149,7 +149,7 @@ class FFT(object):
                 collapsable_axes_candidates = [a] #start new intermediate list
         collapsable_axes_list.append(collapsable_axes_candidates) #append last intermediate list to 
         
-        assert len(collapsable_axes_list) == 1 #all non-transformed axes collapsed
+        assert len(collapsable_axes_list) == 1, 'data layout not supported (only single non-transformed axis allowd)' #all non-transformed axes collapsed
         axes_notransform = collapsable_axes_list[0] #all axes collapsable: take single group of collapsable axes
         
         t_distances = strides[axes_notransform]//dtype.itemsize
