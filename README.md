@@ -64,7 +64,8 @@ initialize memory (on host and GPU). In this example we want to perform in paral
 ``` python
 data_host = np.zeros((4, 1024, 1024), dtype = np.complex64)
 #data_host[:] = some_useful_data
-data_gpu = cla.to_device(queue, data_host)```
+data_gpu = cla.to_device(queue, data_host)
+```
 
 create FFT transform plan for batched inline 2D transform along second two axes.
 
