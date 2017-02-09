@@ -7,9 +7,10 @@
 .. moduleauthor:: Gregor Thalhammer
 """
 
-import cython
+cimport cython
 import pyopencl as cl
 from libc.stdlib cimport malloc, free
+import atexit
 
 ctypedef size_t voidptr_t
 
@@ -49,19 +50,36 @@ cdef inline bint errcheck(clfftStatus result) except True:
         raise GpyFFT_Error(result)
     return is_error
 
+
+_initialized=False    
+
 #main class
-#TODO: need to initialize (and destroy) at module level
 cdef class GpyFFT(object):
     """The GpyFFT object is the primary interface to the clFFT library"""
+
     def __cinit__(self, debug = False):
+        if not _initialized:
+            GpyFFT._initialize(debug)
+
+    @classmethod
+    @cython.binding(True)
+    def _initialize(cls, debug = False):
+        global _initialized
+        if _initialized:
+            raise RuntimeError('GpyFFT is already initialized')
         cdef clfftSetupData setup_data
         errcheck(clfftInitSetupData(&setup_data))
         if debug:
             setup_data.debugFlags |= CLFFT_DUMP_PROGRAMS
         errcheck(clfftSetup(&setup_data))
+        _initialized=True
+        atexit.register(GpyFFT._teardown)
 
-    def __dealloc__(self):
+    @classmethod
+    @cython.binding(True)
+    def _teardown(cls):
         errcheck(clfftTeardown())
+        _initialized=False
 
     def get_version(self):
         """returns the version of the underlying clFFT library
