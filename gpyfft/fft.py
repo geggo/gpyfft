@@ -25,7 +25,7 @@ class FFT(object):
             t_inplace = False
             t_strides_out, t_distance_out, t_batchsize_out, t_shape_out, foo = self.calculate_transform_strides(
                 axes, out_array)
-            if in_array.base_data is out_array.base_data:
+            if in_array.base_data is out_array.base_data and in_array.offset == out_array.offset:
                 t_inplace = True
 
             #assert t_batchsize_out == t_batchsize_in and t_shape == t_shape_out, 'input and output size does not match' #TODO: fails for real-to-complex
