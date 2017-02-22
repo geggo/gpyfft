@@ -196,13 +196,23 @@ class FFT(object):
 
         # get buffer for data
         if data.offset != 0:
-            data = data._new_with_changes(data=data.base_data[data.offset:], offset=0)
+            buf = data.base_data
+            if hasattr(buf, 'buf'):
+                # PooledBuffer (probably)
+                buf = buf.buf
+            data = data._new_with_changes(data=buf[data.offset:], offset=0)
+            del buf
         data_buffer = data.base_data
 
         if result is not None:
             # get buffer for result
             if result.offset != 0:
-                result = result._new_with_changes(data=result.base_data[result.offset:], offset=0)
+                buf = result.base_data
+                if hasattr(buf, 'buf'):
+                    # PooledBuffer (probably)
+                    buf = buf.buf
+                result = result._new_with_changes(data=buf[result.offset:], offset=0)
+                del buf
             result_buffer = result.base_data
 
             events = self.plan.enqueue_transform((self.queue,), (data_buffer,), (result_buffer),
