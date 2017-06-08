@@ -50,7 +50,8 @@ imports:
 import numpy as np
 import pyopencl as cl
 import pyopencl.array as cla
-from gpyfft.fft import FFT```
+from gpyfft.fft import FFT
+```
 
 initialize GPU:
 
