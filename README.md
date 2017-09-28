@@ -89,8 +89,14 @@ Read back the data from the GPU to the host
 result_host = data_gpu.get()
 ```
 
+## Benchmark
 
-
+A simple benchmark is contained as a submodule, you can run it on the command line by `python -m gpyfft.benchmark`, or from Python
+``` python
+import gpyfft.benchmark
+gpyfft.benchmark.run()
+```
+Note, you might want to set the `PYOPENCL_CTX` environment variable to select your OpenCL platform and device.
 
 
   [clFFT]: https://github.com/clMathLibraries/clFFT
@@ -99,4 +105,4 @@ result_host = data_gpu.get()
   [fft.py]: gpyfft/fft.py
   [pyfft]: http://github.com/Manticore/pyfft
   [simple\_example.py]: examples/simple_example.py
-  [benchmark.py]: gpyfft/benchmark.py
+  [benchmark.py]: gpyfft/gpyfft/benchmark.py
