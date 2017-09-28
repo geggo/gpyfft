@@ -129,7 +129,6 @@ cdef class GpyFFT(object):
                 when `shape` isn't a tuple of length 1, 2 or 3
             TypeError
                 when the context argument is not a `pyopencl.Context`
-
         """
 
         return Plan(context, shape, self)
