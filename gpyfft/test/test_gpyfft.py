@@ -15,9 +15,13 @@ Some basic tests for high-level interface
 #TODO: perform tests for all contexts
 
 contexts = [(ctx,) for ctx in get_contexts()]
+#contexts = []  # see what happens if no OpenCL GPU device available
 
 class test_fft(unittest.TestCase):
 
+    def test_context(self):
+        self.assertTrue(contexts, msg='no OpenCL GPU device available')
+    
     @parameterized.expand(contexts)
     def test_1d_inplace(self, ctx):
         queue = cl.CommandQueue(ctx)
