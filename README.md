@@ -105,4 +105,4 @@ Note, you might want to set the `PYOPENCL_CTX` environment variable to select yo
   [fft.py]: gpyfft/fft.py
   [pyfft]: http://github.com/Manticore/pyfft
   [simple\_example.py]: examples/simple_example.py
-  [benchmark.py]: gpyfft/gpyfft/benchmark.py
+  [benchmark.py]: gpyfft/benchmark.py
