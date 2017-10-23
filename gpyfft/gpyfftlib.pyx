@@ -7,13 +7,11 @@
 .. moduleauthor:: Gregor Thalhammer
 """
 
-import cython
+cimport cython
 import pyopencl as cl
 from libc.stdlib cimport malloc, free
+import atexit
 
-#ctypedef long int voidptr_t
-#ctypedef long long int voidptr_t
-#from libc.stdint cimport uintptr_t
 ctypedef size_t voidptr_t
 
 DEF MAX_QUEUES = 5
@@ -52,19 +50,36 @@ cdef inline bint errcheck(clfftStatus result) except True:
         raise GpyFFT_Error(result)
     return is_error
 
+
+_initialized=False    
+
 #main class
-#TODO: need to initialize (and destroy) at module level
 cdef class GpyFFT(object):
     """The GpyFFT object is the primary interface to the clFFT library"""
+
     def __cinit__(self, debug = False):
+        if not _initialized:
+            GpyFFT._initialize(debug)
+
+    @classmethod
+    @cython.binding(True)
+    def _initialize(cls, debug = False):
+        global _initialized
+        if _initialized:
+            raise RuntimeError('GpyFFT is already initialized')
         cdef clfftSetupData setup_data
         errcheck(clfftInitSetupData(&setup_data))
         if debug:
             setup_data.debugFlags |= CLFFT_DUMP_PROGRAMS
         errcheck(clfftSetup(&setup_data))
+        _initialized=True
+        atexit.register(GpyFFT._teardown)
 
-    def __dealloc__(self):
+    @classmethod
+    @cython.binding(True)
+    def _teardown(cls):
         errcheck(clfftTeardown())
+        _initialized=False
 
     def get_version(self):
         """returns the version of the underlying clFFT library
@@ -114,7 +129,6 @@ cdef class GpyFFT(object):
                 when `shape` isn't a tuple of length 1, 2 or 3
             TypeError
                 when the context argument is not a `pyopencl.Context`
-
         """
 
         return Plan(context, shape, self)
@@ -597,11 +611,9 @@ cdef class Plan(object):
                                           out_buffers_,
                                           tmp_buffer_))
         
-        #return tuple((cl.Event.from_cl_event_as_int(<long>out_cl_events[i]) for i in range(n_queues)))
-        #return tuple((cl.Event.from_int_ptr(<long long>out_cl_events[i], retain=False) for i in range(n_queues)))
         return tuple((cl.Event.from_int_ptr(<voidptr_t>out_cl_events[i], retain=False) for i in range(n_queues)))
             
-        
+
             
         
         

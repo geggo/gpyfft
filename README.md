@@ -50,7 +50,8 @@ imports:
 import numpy as np
 import pyopencl as cl
 import pyopencl.array as cla
-from gpyfft.fft import FFT```
+from gpyfft.fft import FFT
+```
 
 initialize GPU:
 
@@ -64,7 +65,8 @@ initialize memory (on host and GPU). In this example we want to perform in paral
 ``` python
 data_host = np.zeros((4, 1024, 1024), dtype = np.complex64)
 #data_host[:] = some_useful_data
-data_gpu = cla.to_device(queue, data_host)```
+data_gpu = cla.to_device(queue, data_host)
+```
 
 create FFT transform plan for batched inline 2D transform along second two axes.
 
@@ -87,8 +89,14 @@ Read back the data from the GPU to the host
 result_host = data_gpu.get()
 ```
 
+## Benchmark
 
-
+A simple benchmark is contained as a submodule, you can run it on the command line by `python -m gpyfft.benchmark`, or from Python
+``` python
+import gpyfft.benchmark
+gpyfft.benchmark.run()
+```
+Note, you might want to set the `PYOPENCL_CTX` environment variable to select your OpenCL platform and device.
 
 
   [clFFT]: https://github.com/clMathLibraries/clFFT
