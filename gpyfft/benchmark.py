@@ -32,7 +32,7 @@ def run(double_precision=False):
     resultF = cla.to_device(queue, np.asfortranarray(nd_result))
     result = resultF
 
-    axes_list = [(1,2), (2,1)] #batched 2d transforms
+    axes_list = [(-2,-1), (-1,-2), None] #batched 2d transforms
 
     if True:
         print('out of place transforms', dataC.shape, dataC.dtype)
