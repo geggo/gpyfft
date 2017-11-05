@@ -38,6 +38,7 @@ The low lever interface is complete (more or less), the high-level interface is 
   * interleaved data
   * support injecting custom OpenCL code (pre and post callbacks)
   * accept pyopencl arrays with non-zero offsets (Syam Gadde)
+  * heuristics for optimal performance for choosing order axes transform if none given (Release 0.7.1)
 
 ## Basic usage
 
