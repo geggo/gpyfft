@@ -2,7 +2,7 @@ build
 *.pyc
 gpyfft.egg-info
 dist
-gpyfftlib.c
+gpyfftlib.cpp
 *.so
 .cache
 .ipynb_checkpoints
