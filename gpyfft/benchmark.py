@@ -16,12 +16,12 @@ def run(double_precision=False):
 
     dtype = np.complex64 if not double_precision else np.complex128
     
-    n_run = 100 #set to 1 for proper testing
+    n_run = 100 #set to 1 for testing for correct result
 
     if n_run > 1:
-        nd_dataC = np.random.normal(size=(4,1024, 1024)).astype(dtype) #faster than 1024x1024?
+        nd_dataC = np.random.normal(size=(1024, 1024)).astype(dtype)
     else:
-        nd_dataC = np.ones((4,1024, 1024), dtype = dtype) #set n_run to 1
+        nd_dataC = np.ones((1024, 1024), dtype = dtype) #set n_run to 1
 
     nd_dataF = np.asfortranarray(nd_dataC)
     dataC = cla.to_device(queue, nd_dataC)
