@@ -227,7 +227,7 @@ cdef class Plan(object):
         for i in range(ndim):
             lengths[i] = shape[i]
         
-        cdef clfftDim ndim_cl
+        cdef clfftDim ndim_cl = CLFFT_1D
         if ndim==1:
             ndim_cl = CLFFT_1D
         elif ndim==2:
