@@ -42,6 +42,7 @@ def run(double_precision=False):
                          dataF):
                 for result in (resultC,
                                resultF):
+                    t_ms, gflops = 0, 0
                     try:
 
                         transform = FFT(context, queue, data, result, axes = axes)
@@ -80,8 +81,9 @@ def run(double_precision=False):
    
                     except GpyFFT_Error as e:
                         print(e)
-                        t_ms, gflops = 0, 0
                     except AssertionError as e:
+                        print(e)
+                    except Exception as e:
                         print(e)
                     finally:
                         print('%5.2fms %6.2f Gflops' % (t_ms, gflops) )
