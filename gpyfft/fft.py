@@ -19,16 +19,29 @@ class FFT(object):
         self.context = context
         self.queue = queue
 
+        # if no axes are given, transform all axes, select axes order for good performance depending on memory layout
+        if axes is None:
+            if in_array.flags.c_contiguous:
+                axes = np.arange(in_array.ndim)[::-1]
+            elif in_array.flags.f_contiguous:
+                axes = np.arange(in_array.ndim)
+            else:
+                axes = np.arange(in_array.dim)[::-1]
+                # TODO: find good heuristics for this (rare), e.g. based on strides
+        else:
+            axes = np.asarray(axes)
+            
         t_strides_in, t_distance_in, t_batchsize_in, t_shape, axes_transform = self.calculate_transform_strides(axes, in_array)
 
         if out_array is not None:
             t_inplace = False
-            t_strides_out, t_distance_out, t_batchsize_out, t_shape_out, foo = self.calculate_transform_strides(
+            t_strides_out, t_distance_out, t_batchsize_out, t_shape_out, axes_transform_out = self.calculate_transform_strides(
                 axes, out_array)
             if in_array.base_data is out_array.base_data:
                 t_inplace = True
 
             #assert t_batchsize_out == t_batchsize_in and t_shape == t_shape_out, 'input and output size does not match' #TODO: fails for real-to-complex
+            assert np.all(axes_transform == axes_transform_out), 'error finding transform axis (consider setting axes argument)'
             
         else:
             t_inplace = True
@@ -122,17 +135,13 @@ class FFT(object):
         self.result = out_array
 
     @classmethod
-    def calculate_transform_strides(cls, axes, array):
+    def calculate_transform_strides(cls, axes_transform, array):
     
         shape = np.array(array.shape)
         strides = np.array(array.strides)
         dtype = array.dtype
         
-        ddim = len(shape) #dimensionality data
-        
-        #transform along all axes if transform axes are not given (None)
-        axes_transform = np.arange(ddim) if axes is None else np.array(axes)
-
+        ddim = len(shape) #dimensionality data        
         tdim = len(axes_transform) #dimensionality transform
         assert tdim <= ddim
 

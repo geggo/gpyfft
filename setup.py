@@ -41,6 +41,7 @@ extensions = [
               extra_link_args=[],
               libraries=['clFFT'],
               library_dirs = [CLFFT_LIB_DIR,],
+              language='c++',
               )
     ]
 

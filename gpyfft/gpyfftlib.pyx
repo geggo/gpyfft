@@ -12,6 +12,11 @@ import pyopencl as cl
 from libc.stdlib cimport malloc, free
 import atexit
 
+try:
+    from weakref import finalize
+except ImportError:
+    from backports.weakref import finalize
+
 ctypedef size_t voidptr_t
 
 DEF MAX_QUEUES = 5
@@ -64,6 +69,7 @@ cdef class GpyFFT(object):
     @classmethod
     @cython.binding(True)
     def _initialize(cls, debug = False):
+        # print 'initialize clfft'
         global _initialized
         if _initialized:
             raise RuntimeError('GpyFFT is already initialized')
@@ -78,7 +84,9 @@ cdef class GpyFFT(object):
     @classmethod
     @cython.binding(True)
     def _teardown(cls):
+        # print 'teardown clfft'
         errcheck(clfftTeardown())
+        global _initialized
         _initialized=False
 
     def get_version(self):
@@ -133,6 +141,13 @@ cdef class GpyFFT(object):
 
         return Plan(context, shape, self)
 
+    
+cdef _destroy_plan(clfftPlanHandle plan):
+    cdef clfftPlanHandle p=plan
+    #print 'destroy plan', p
+    errcheck(clfftDestroyPlan(&p))
+    
+    
 #@cython.internal
 cdef class Plan(object):
     """A plan is the collection of (almost) all parameters needed to specify 
@@ -156,13 +171,14 @@ cdef class Plan(object):
 
     These are specified later, when the plan is executed.
     """
-
+    cdef object __weakref__
     cdef clfftPlanHandle plan
     cdef object lib
 
-    def __dealloc__(self):
-        if self.plan:
-            errcheck(clfftDestroyPlan(&self.plan))
+    #def __dealloc__(self):
+        #if self.plan:
+        #    errcheck(clfftDestroyPlan(&self.plan))
+        #print 'dealloc plan', self.plan
 
     def __cinit__(self):
         self.plan = 0
@@ -211,7 +227,7 @@ cdef class Plan(object):
         for i in range(ndim):
             lengths[i] = shape[i]
         
-        cdef clfftDim ndim_cl
+        cdef clfftDim ndim_cl = CLFFT_1D
         if ndim==1:
             ndim_cl = CLFFT_1D
         elif ndim==2:
@@ -220,6 +236,8 @@ cdef class Plan(object):
             ndim_cl = CLFFT_3D
 
         clfftCreateDefaultPlan(&self.plan, context_handle, ndim_cl, &lengths[0])
+        finalize(self, _destroy_plan, self.plan)
+        #print 'init plan', self.plan
 
     property precision:
         """the floating point precision of the FFT data"""    
