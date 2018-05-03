@@ -151,8 +151,8 @@ class FFT(object):
         # remaining, non-transformed axes
         axes_notransform = np.lib.arraysetops.setdiff1d(range(ddim), axes_transform)
         
-        #sort non-transformed axes by strides
-        axes_notransform = axes_notransform[np.argsort(strides[axes_notransform])]
+        # sort non-transformed axes by strides. [::-1] takes care of unit-size dimensions in the middle of the shape.
+        axes_notransform = axes_notransform[np.argsort(strides[axes_notransform][::-1])][::-1]
         
         #print "axes_notransformed sorted", axes_notransform
         
