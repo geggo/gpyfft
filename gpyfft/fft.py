@@ -26,7 +26,7 @@ class FFT(object):
             elif in_array.flags.f_contiguous:
                 axes = np.arange(in_array.ndim)
             else:
-                axes = np.arange(in_array.dim)[::-1]
+                axes = np.arange(in_array.ndim)[::-1]
                 # TODO: find good heuristics for this (rare), e.g. based on strides
         else:
             axes = np.asarray(axes)
