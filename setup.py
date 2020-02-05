@@ -16,8 +16,9 @@ if 'Linux' in system:
 
 #Windows
 elif 'Windows' in system:
-    CLFFT_DIR = r'C:\Users\q014gt\Devel\clFFT-Full-2.10.2-Windows-x64'
-    CLFFT_LIB_DIR = os.path.join(CLFFT_DIR, 'bin')
+    CLFFT_DIR = r'C:\Users\admin\Devel\clFFT-Full-2.12.2-Windows-x64'
+    #CLFFT_LIB_DIR = os.path.join(CLFFT_DIR, 'bin')
+    CLFFT_LIB_DIR = os.path.join(CLFFT_DIR, 'lib64\import')
     CLFFT_INCL_DIRS = [os.path.join(CLFFT_DIR, 'include'), ]
     CL_DIR = os.getenv('AMDAPPSDKROOT')
     CL_INCL_DIRS = [os.path.join(CL_DIR, 'include')]
@@ -51,11 +52,11 @@ extensions = [
 def copy_clfftdll_to_package():
     import shutil
     shutil.copy(
-        os.path.join(CLFFT_LIB_DIR, 'clFFT.dll'),
+        os.path.join(CLFFT_DIR, 'bin', 'clFFT.dll'),
         'gpyfft')
 
     shutil.copy(
-        os.path.join(CLFFT_LIB_DIR, 'StatTimer.dll'),
+        os.path.join(CLFFT_DIR, 'bin', 'StatTimer.dll'),
         'gpyfft')
     print("copied clFFT.dll, StatTimer.dll")
 

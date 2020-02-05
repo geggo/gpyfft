@@ -1,6 +1,6 @@
 from __future__ import print_function
 import unittest
-from nose_parameterized import parameterized
+from parameterized import parameterized
 import numpy as np
 import pyopencl as cl
 import pyopencl.array as cla
