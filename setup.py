@@ -25,10 +25,13 @@ elif 'Windows' in system:
 # macOS
 elif 'Darwin' in system:
     CLFFT_DIR = r'/Users/gregor/Devel/clFFT'
-    CLFFT_LIB_DIR = r'/Users/gregor/Devel/clFFT/src/library'
+    CLFFT_LIB_DIRS = [r'/Users/gregor/Devel/clFFT/src/library']
     CLFFT_INCL_DIRS = [os.path.join(CLFFT_DIR, 'src', 'include'), ]
+    #CLFFT_LIB_DIRS = []
+    #CLFFT_INCL_DIRS = []
     CL_INCL_DIRS = []
-
+    EXTRA_COMPILE_ARGS = ['-stdlib=libc++']
+    EXTRA_LINK_ARGS = ['-stdlib=libc++']
 
 import Cython.Compiler.Options
 Cython.Compiler.Options.generate_cleanup_code = 2
@@ -37,10 +40,10 @@ extensions = [
     Extension("gpyfft.gpyfftlib",
               [os.path.join('gpyfft', 'gpyfftlib.pyx')],
               include_dirs= CLFFT_INCL_DIRS + CL_INCL_DIRS,
-              extra_compile_args=[],
-              extra_link_args=[],
+              extra_compile_args=EXTRA_COMPILE_ARGS,
+              extra_link_args=EXTRA_LINK_ARGS,
               libraries=['clFFT'],
-              library_dirs = [CLFFT_LIB_DIR,],
+              library_dirs = CLFFT_LIB_DIRS,
               language='c++',
               )
     ]
