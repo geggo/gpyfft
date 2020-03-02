@@ -18,16 +18,15 @@ if 'Linux' in system:
     CLFFT_DIR = os.getenv("CLFFT_ROOT") 
     if CLFFT_DIR is None:
         print("CLFFT_DIR not set.\n Falling back to system default.")
-        CLFFT_DIR = r'/usr/local/'
-        CLFFT_LIB_DIRS = [os.path.join(CLFFT_DIR, 'lib64'), 
-                          os.path.join(CLFFT_DIR, 'lib')]
+        CLFFT_DIR = r'/usr/local'
+        CLFFT_LIB_DIRS = [os.path.join(CLFFT_DIR, 'lib64')]
         CLFFT_INCL_DIRS = [os.path.join(CLFFT_DIR, 'include')]
     else: 
        print("Using supplied CLFFT_ROOT dir")
-    CLFFT_LIB_DIRS = [os.path.join(CLFFT_DIR, 'build', 'library'), 
-                      os.path.join(CLFFT_DIR, 'lib')]
-    CLFFT_INCL_DIRS = [os.path.join(CLFFT_DIR, 'src', 'include')]
-    CL_INCL_DIRS = ['/opt/AMDAPPSDK-3.0/include']
+       CLFFT_LIB_DIRS = [os.path.join(CLFFT_DIR, 'build', 'library'), 
+                         os.path.join(CLFFT_DIR, 'library')]
+       CLFFT_INCL_DIRS = [os.path.join(CLFFT_DIR, 'src', 'include')]
+    CL_INCL_DIRS = [r'/usr/local/include']
 
 
 #Windows
