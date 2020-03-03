@@ -10,26 +10,27 @@ system = platform.system()
 # Linux
 if 'Linux' in system:
     CLFFT_DIR = r'/home/gregor/devel/clFFT'
-    CLFFT_LIB_DIR = r'/usr/local/lib64'
+    CLFFT_LIB_DIRS = [r'/usr/local/lib64']
     CLFFT_INCL_DIRS = [os.path.join(CLFFT_DIR, 'src', 'include'), ]
     CL_INCL_DIRS = ['/opt/AMDAPPSDK-3.0/include']
+    EXTRA_COMPILE_ARGS = []
+    EXTRA_LINK_ARGS = []
 
 #Windows
 elif 'Windows' in system:
     CLFFT_DIR = r'C:\Users\admin\Devel\clFFT-Full-2.12.2-Windows-x64'
-    #CLFFT_LIB_DIR = os.path.join(CLFFT_DIR, 'bin')
-    CLFFT_LIB_DIR = os.path.join(CLFFT_DIR, 'lib64\import')
+    CLFFT_LIB_DIRS = [os.path.join(CLFFT_DIR, 'lib64\import')]
     CLFFT_INCL_DIRS = [os.path.join(CLFFT_DIR, 'include'), ]
     CL_DIR = os.getenv('AMDAPPSDKROOT')
     CL_INCL_DIRS = [os.path.join(CL_DIR, 'include')]
+    EXTRA_COMPILE_ARGS = []
+    EXTRA_LINK_ARGS = []
     
 # macOS
 elif 'Darwin' in system:
     CLFFT_DIR = r'/Users/gregor/Devel/clFFT'
     CLFFT_LIB_DIRS = [r'/Users/gregor/Devel/clFFT/src/library']
     CLFFT_INCL_DIRS = [os.path.join(CLFFT_DIR, 'src', 'include'), ]
-    #CLFFT_LIB_DIRS = []
-    #CLFFT_INCL_DIRS = []
     CL_INCL_DIRS = []
     EXTRA_COMPILE_ARGS = ['-stdlib=libc++']
     EXTRA_LINK_ARGS = ['-stdlib=libc++']
