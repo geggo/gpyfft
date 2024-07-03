@@ -21,6 +21,7 @@ The open source library [clFFT] implements FFT for running on a GPU via OpenCL. 
 This python wrapper is designed to tightly integrate with [PyOpenCL]. It consists of a low-level Cython based wrapper with an interface similar to the underlying C library. On top of that it offers a high-level interface designed to work on data contained in instances of `pyopencl.array.Array`, a numpy work-alike array class for GPU computations. The high-level interface takes some inspiration from [pyFFTW]. For details of the high-level interface see [fft.py].
 
 ## News
+* 2024/07/08 version 0.8.0 supports numpy 2.0
 * 2017/11/05 for 2D and 3D transforms with default (empty) settings for the transform axes, now a more clever ordering of the transform axes is chosen, depending on the memory layout: last axis is transformed first for a C contiguous input array. I have seen huge performance improvements, 3x to 4x compared to the previous approach (always first axis first). Please report back benchmark results ('python -m gpyfft.benchmark') if this holds true for your GPU.
 
 ## Status
