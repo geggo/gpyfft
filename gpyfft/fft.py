@@ -56,14 +56,14 @@ class FFT(object):
         #complex128 <-> complex128
 
         if in_array.dtype in (np.float32, np.complex64):
-            precision = gfft.CLFFT_SINGLE
+            precision = gfft.clfftPrecision_.CLFFT_SINGLE
         elif in_array.dtype in (np.float64, np.complex128):
-            precision = gfft.CLFFT_DOUBLE
+            precision = gfft.clfftPrecision_.CLFFT_DOUBLE
 
         #TODO: add assertions that precision match
         if in_array.dtype in (np.float32, np.float64):
-            layout_in = gfft.CLFFT_REAL
-            layout_out = gfft.CLFFT_HERMITIAN_INTERLEAVED
+            layout_in = gfft.clfftLayout_.CLFFT_REAL
+            layout_out = gfft.clfftLayout_.CLFFT_HERMITIAN_INTERLEAVED
 
             expected_out_shape = list(in_array.shape)
             expected_out_shape[axes_transform[0]] = expected_out_shape[axes_transform[0]]//2 + 1
@@ -72,17 +72,17 @@ class FFT(object):
 
         elif in_array.dtype in (np.complex64, np.complex128):
             if not real:
-                layout_in = gfft.CLFFT_COMPLEX_INTERLEAVED
-                layout_out = gfft.CLFFT_COMPLEX_INTERLEAVED
+                layout_in = gfft.clfftLayout_.CLFFT_COMPLEX_INTERLEAVED
+                layout_out = gfft.clfftLayout_.CLFFT_COMPLEX_INTERLEAVED
             else:
                 # complex-to-real transform
-                layout_in = gfft.CLFFT_HERMITIAN_INTERLEAVED
-                layout_out = gfft.CLFFT_REAL
+                layout_in = gfft.clfftLayout_.CLFFT_HERMITIAN_INTERLEAVED
+                layout_out = gfft.clfftLayout_.CLFFT_REAL
                 t_shape = t_shape_out
 
-        if t_inplace and ((layout_in is gfft.CLFFT_REAL) or
-                          (layout_out is gfft.CLFFT_REAL)):
-            assert ((in_array.strides[axes_transform[0]] == in_array.dtype.itemsize) and \
+        if t_inplace and ((layout_in is gfft.clfftLayout_.CLFFT_REAL) or
+                          (layout_out is gfft.clfftLayout_.CLFFT_REAL)):
+            assert ((in_array.strides[axes_transform[0]] == in_array.dtype.itemsize) and
                     (out_array.strides[axes_transform[0]] == out_array.dtype.itemsize)), \
                     'inline real transforms need stride 1 for first transform axis'
 
