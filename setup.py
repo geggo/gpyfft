@@ -25,7 +25,7 @@ elif 'Windows' in system:
     CL_INCL_DIRS = [os.path.join(CL_DIR, 'include')]
     EXTRA_COMPILE_ARGS = []
     EXTRA_LINK_ARGS = []
-    
+
 # macOS
 elif 'Darwin' in system:
     CLFFT_DIR = r'/Users/gregor/Devel/clFFT'
@@ -84,7 +84,6 @@ def get_readme():
 
 
 install_requires = ["numpy", "pyopencl"]
-setup_requires = ["numpy", "cython"]
 
 
 setup(
@@ -100,5 +99,4 @@ setup(
     ext_modules=cythonize(extensions),
     package_data=package_data,
     install_requires=install_requires,
-    setup_requires=setup_requires,
     )
